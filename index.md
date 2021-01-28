@@ -1,7 +1,6 @@
 # Stephen Humphries
-#### Connect with me on [LinkedIn](https://www.linkedin.com/in/sjahumphries/).
-
 <img src="images/smallclearlake.jpg" width="100%" title="I took this in the evening on Small Clear Lake in Frontenac Park. It's a nice photo, so I thought I'd use it to add some colour to the top of the page :)">
+_Connect with me on [LinkedIn](https://www.linkedin.com/in/sjahumphries/)._
 
 ## 2021.01.27
 Hello, world. Welcome to my website.
