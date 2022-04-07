@@ -1,5 +1,11 @@
 theme: null
 
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: "default"
+
 # Non-jekyll custom config variables
 copyright: Stephen Humphries
 title: Stephen's Site
