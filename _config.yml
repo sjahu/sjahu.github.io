@@ -1,4 +1,5 @@
-name: Stephen's Site
-title: null
-locale: en_CA
 theme: null
+
+# Non-jekyll custom config variables
+copyright: Stephen Humphries
+title: Stephen's Site
