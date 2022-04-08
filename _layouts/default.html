@@ -3,16 +3,18 @@
   <head>
     <meta charset="utf-8">
     <title>{{ page.title }} | {{ site.title }}</title>
-    <link rel="stylesheet" href="/assets/css/base.css">
+    <link rel="stylesheet" href="/assets/css/style.css">
   </head>
   <body>
     <nav>
       <a href="/">Home</a>
       <a href="/blog">Blog</a>
     </nav>
-    <section>
+    <hr>
+    <div class="default-content">
       {{ content }}
-    </section>
+    </div>
+    <hr>
     <footer>
       <center><sub>Copyright &copy; {{ site.time | date: "%Y" }} {{ site.copyright }}</sub></center>
     </footer>

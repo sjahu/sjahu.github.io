@@ -1,0 +1,23 @@
+.post-title {
+  margin-bottom: 0px;
+}
+
+.post-publish-date {
+  margin-bottom: 10px;
+}
+
+.post-header-image {
+  margin: 0px;
+
+  img {
+    width: 100%;
+    height: 240px;
+    object-fit: cover;
+  }
+
+  caption {
+    width: 100%;
+    text-align: left;
+    font-style: italic;
+  }
+}

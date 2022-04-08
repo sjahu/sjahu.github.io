@@ -1,11 +1,8 @@
 ---
-title: HDMI CEC Volume Control
+title: Forwarding HDMI CEC volume control messages to my TV
+header_image: /assets/images/blog/2022-04-06/header.jpg
+header_image_caption: not so smart after all
 ---
-
-![](/assets/images/blog/2022-04-06/header.jpg)
-
-# Forwarding HDMI CEC volume control messages to my TV
-*not so smart after all*
 
 In a recent article [shared on Hacker News](https://news.ycombinator.com/item?id=30869140), the author detailed his attempt at creating [the smallest and worst HDMI display](https://mitxela.com/projects/ddc-oled) by abusing the i<sup>2</sup>c bus that powers the Display Data Channel protocol. The comments prompted me to read up on another constituent protocol of HDMI that I had, up to that point, taken for granted: [Consumer Electronics Control](https://en.wikipedia.org/wiki/Consumer_Electronics_Control) (CEC).
 
