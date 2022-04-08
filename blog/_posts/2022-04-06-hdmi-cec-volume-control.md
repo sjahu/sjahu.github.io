@@ -1,6 +1,6 @@
 ---
 title: Forwarding HDMI CEC volume control messages to my TV
-header_image: /assets/images/blog/2022-04-06/header.jpg
+header_image: /assets/images/blog/2022-04-06/setup.jpg
 header_image_caption: not so smart after all
 ---
 
