@@ -1,3 +1,9 @@
+body {
+  max-width: 1024px;
+  margin: 16px auto;
+  font-family: "EB Garamond", "Times New Roman", "serif";
+}
+
 img {
   max-width: 100%;
 }
@@ -6,7 +12,9 @@ pre {
   white-space: pre-wrap;
 }
 
-.default-content {
-  max-width: 1024px;
-  margin: 0 auto;
+code.language-plaintext {
+  padding-left: 2px;
+  padding-right: 2px;
+  background: #DDD;
+  border-radius: 4px;
 }
