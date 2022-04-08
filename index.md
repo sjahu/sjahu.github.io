@@ -7,9 +7,3 @@ title: Home
 
 _Connect with me on [LinkedIn](https://www.linkedin.com/in/sjahumphries/), [GitHub](https://github.com/sjahu/), or by email at <noscript id="email">(JavaScript is disabled in your browser-- you'll have to read the source to figure out my email address)</noscript><script src="/assets/js/email.js"></script>._
 
-## 2021.01.27
-Hello, world. Welcome to my website.
-
-I've (finally) moved my online presence to GitHub pages because the VPS provider that I've been using for the past several years is shutting down my server in a couple days as they roll out a new line of newer, more expensive products.
-
-I haven't got any specific plans for this site, yet, but we'll see; maybe I'll come up with something interesting to say.
