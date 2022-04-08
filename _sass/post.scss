@@ -19,3 +19,16 @@
     font-style: italic;
   }
 }
+
+.posts-list {
+  list-style-type: none;
+  padding: 0;
+
+  li {
+    margin-bottom: 30px;
+
+    h2 {
+      margin: 0;
+    }
+  }
+}
