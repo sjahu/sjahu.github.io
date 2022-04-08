@@ -1,6 +1,7 @@
 body {
   max-width: 1024px;
-  margin: 16px auto;
+  margin: 0 auto;
+  padding: 16px;
   font-family: "EB Garamond", "Times New Roman", "serif";
 }
 
@@ -17,4 +18,8 @@ code.language-plaintext {
   padding-right: 2px;
   background: #DDD;
   border-radius: 4px;
+}
+
+nav a {
+  margin-right: 16px;
 }
