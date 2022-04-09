@@ -82,160 +82,83 @@
 
 <p><em>cec_vol.py</em>:</p>
 
-<figure class="highlight"><pre><code class="language-python" data-lang="python"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-28
-29
-30
-31
-32
-33
-34
-35
-36
-37
-38
-39
-40
-41
-42
-43
-44
-45
-46
-47
-48
-49
-50
-51
-52
-53
-54
-55
-56
-57
-58
-59
-60
-61
-62
-63
-64
-65
-66
-67
-68
-69
-70
-71
-72
-73
-74
-75
-76
-77
-</pre></td><td class="code"><pre><span class="c1">#!/usr/bin/python3
-</span>
-<span class="c1"># My Apple TV won't send HDMI CEC volume control commands to my TV, seemingly because the TV
-# doesn't advertise itself as an audio sink. This program wraps cec-client, which pretends to
-# be an audio system, and forwards volume up/down commands that it receives from the Apple TV
-# to the TV.
-</span>
-<span class="c1"># Launch automatically after boot by calling this script from /etc/rc.local
-</span>
-<span class="kn">import</span> <span class="nn">re</span>
-<span class="kn">import</span> <span class="nn">subprocess</span>
-<span class="kn">from</span> <span class="nn">subprocess</span> <span class="kn">import</span> <span class="n">Popen</span><span class="p">,</span> <span class="n">PIPE</span>
-
-<span class="c1"># CEC constants
-</span><span class="n">TV</span> <span class="o">=</span> <span class="s">"0"</span>
-<span class="n">PLAYBACK_1</span> <span class="o">=</span> <span class="s">"4"</span>
-<span class="n">AUDIO_SYSTEM</span><span class="o">=</span> <span class="s">"5"</span>
-<span class="n">USER_CONTROL_PRESSED</span> <span class="o">=</span> <span class="s">"44"</span>
-<span class="n">USER_CONTROL_RELEASED</span> <span class="o">=</span> <span class="s">"45"</span>
-<span class="n">SYSTEM_AUDIO_MODE_STATUS</span> <span class="o">=</span> <span class="s">"7e"</span>
-<span class="n">SYSTEM_AUDIO_MODE_STATUS_OFF</span> <span class="o">=</span> <span class="s">"00"</span>
-<span class="n">SYSTEM_AUDIO_MODE_STATUS_ON</span> <span class="o">=</span> <span class="s">"01"</span>
-
-<span class="c1"># Colour constants
-</span><span class="n">RED</span> <span class="o">=</span> <span class="s">"</span><span class="se">\033</span><span class="s">[1;31m"</span>
-<span class="n">BLUE</span> <span class="o">=</span> <span class="s">"</span><span class="se">\033</span><span class="s">[1;34m"</span>
-<span class="n">NCOL</span> <span class="o">=</span> <span class="s">"</span><span class="se">\033</span><span class="s">[0m"</span>
-
-<span class="c1"># Start cec-client with device type AUDIO_SYSTEM
-</span><span class="n">proc</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">([</span><span class="s">"cec-client"</span><span class="p">,</span> <span class="s">"-t"</span><span class="p">,</span> <span class="s">"a"</span><span class="p">],</span> <span class="n">stdin</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">PIPE</span><span class="p">)</span>
-
-<span class="c1"># Listen to the output from cec-client
-</span><span class="k">for</span> <span class="n">line_bytes</span> <span class="ow">in</span> <span class="n">proc</span><span class="p">.</span><span class="n">stdout</span><span class="p">:</span>
-  <span class="n">line</span> <span class="o">=</span> <span class="n">line_bytes</span><span class="p">.</span><span class="n">decode</span><span class="p">()</span>
-
-  <span class="c1"># Match sent or received CEC frames
-</span>  <span class="n">frame</span> <span class="o">=</span> <span class="n">re</span><span class="p">.</span><span class="n">search</span><span class="p">(</span>
-    <span class="s">"^TRAFFIC:.*(?:&gt;&gt;|&lt;&lt;) (?P&lt;src&gt;[0-9a-f])(?P&lt;dest&gt;[0-9a-f]):(?P&lt;op&gt;[0-9a-f]{2})(?P&lt;data&gt;(?::[0-9a-f]{2})*)"</span><span class="p">,</span>
-    <span class="n">line</span>
-  <span class="p">)</span>
-
-  <span class="k">if</span> <span class="p">(</span>
-    <span class="n">frame</span>
-    <span class="ow">and</span> <span class="n">frame</span><span class="p">.</span><span class="n">group</span><span class="p">(</span><span class="s">"src"</span><span class="p">)</span> <span class="o">==</span> <span class="n">PLAYBACK_1</span>
-    <span class="ow">and</span> <span class="n">frame</span><span class="p">.</span><span class="n">group</span><span class="p">(</span><span class="s">"dest"</span><span class="p">)</span> <span class="o">==</span> <span class="n">AUDIO_SYSTEM</span>
-    <span class="ow">and</span> <span class="n">frame</span><span class="p">.</span><span class="n">group</span><span class="p">(</span><span class="s">"op"</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="n">USER_CONTROL_PRESSED</span><span class="p">,</span> <span class="n">USER_CONTROL_RELEASED</span><span class="p">]</span>
-  <span class="p">):</span>
-    <span class="c1"># Forward any keypresses sent from PLAYBACK_1 to AUDIO_SYSTEM to TV
-</span>    <span class="n">out</span> <span class="o">=</span> <span class="n">AUDIO_SYSTEM</span> <span class="o">+</span> <span class="n">TV</span> <span class="o">+</span> <span class="s">":"</span> <span class="o">+</span> <span class="n">frame</span><span class="p">.</span><span class="n">group</span><span class="p">(</span><span class="s">"op"</span><span class="p">)</span> <span class="o">+</span> <span class="n">frame</span><span class="p">.</span><span class="n">group</span><span class="p">(</span><span class="s">"data"</span><span class="p">)</span>
-  <span class="k">elif</span> <span class="p">(</span>
-    <span class="n">frame</span>
-    <span class="ow">and</span> <span class="n">frame</span><span class="p">.</span><span class="n">group</span><span class="p">(</span><span class="s">"src"</span><span class="p">)</span> <span class="o">==</span> <span class="n">AUDIO_SYSTEM</span>
-    <span class="ow">and</span> <span class="n">frame</span><span class="p">.</span><span class="n">group</span><span class="p">(</span><span class="s">"dest"</span><span class="p">)</span> <span class="o">==</span> <span class="n">PLAYBACK_1</span>
-    <span class="ow">and</span> <span class="n">frame</span><span class="p">.</span><span class="n">group</span><span class="p">(</span><span class="s">"op"</span><span class="p">)</span> <span class="o">==</span> <span class="n">SYSTEM_AUDIO_MODE_STATUS</span>
-    <span class="ow">and</span> <span class="n">frame</span><span class="p">.</span><span class="n">group</span><span class="p">(</span><span class="s">"data"</span><span class="p">)</span> <span class="o">==</span> <span class="s">":"</span> <span class="o">+</span> <span class="n">SYSTEM_AUDIO_MODE_STATUS_OFF</span>
-  <span class="p">):</span>
-    <span class="c1"># If cec-client tells PLAYBACK_1 that the system audio mode status is "off", immediately send
-</span>    <span class="c1"># another message indicating that it's really "on". Although a lie, this is necessary because,
-</span>    <span class="c1"># for some reason, the Apple TV queries the system audio mode status FIRST thing after waking
-</span>    <span class="c1"># up, before even turning the TV on or setting itself as the active source. At that point, of
-</span>    <span class="c1"># course the system audio mode status is "off", because it's the TV that sets it to "on" after
-</span>    <span class="c1"># it is itself woken up. The Apple TV never asks for the status again and ignores messages
-</span>    <span class="c1"># between the TV and AUDIO_SYSTEM setting the status to "on". It assumes, incorrectly, that
-</span>    <span class="c1"># the status at the time it was awoken is permanent.
-</span>    <span class="n">out</span> <span class="o">=</span> <span class="n">AUDIO_SYSTEM</span> <span class="o">+</span> <span class="n">PLAYBACK_1</span> <span class="o">+</span> <span class="s">":"</span> <span class="o">+</span> <span class="n">SYSTEM_AUDIO_MODE_STATUS</span> <span class="o">+</span> <span class="s">":"</span> <span class="o">+</span> <span class="n">SYSTEM_AUDIO_MODE_STATUS_ON</span>
-  <span class="k">else</span><span class="p">:</span>
-    <span class="n">out</span> <span class="o">=</span> <span class="bp">None</span>
-
-  <span class="c1"># Print output with important lines coloured
-</span>  <span class="k">if</span> <span class="n">out</span><span class="p">:</span>
-    <span class="n">proc</span><span class="p">.</span><span class="n">stdin</span><span class="p">.</span><span class="n">write</span><span class="p">((</span><span class="s">"tx "</span> <span class="o">+</span> <span class="n">out</span> <span class="o">+</span> <span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">).</span><span class="n">encode</span><span class="p">())</span>
-    <span class="n">proc</span><span class="p">.</span><span class="n">stdin</span><span class="p">.</span><span class="n">flush</span><span class="p">()</span>
-
-    <span class="k">print</span><span class="p">(</span><span class="n">BLUE</span> <span class="o">+</span> <span class="n">line</span> <span class="o">+</span> <span class="n">NCOL</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s">""</span><span class="p">)</span>
-    <span class="k">print</span><span class="p">(</span><span class="n">RED</span> <span class="o">+</span> <span class="s">"Sending frame: "</span> <span class="o">+</span> <span class="n">out</span> <span class="o">+</span> <span class="n">NCOL</span><span class="p">)</span>
-  <span class="k">else</span><span class="p">:</span>
-    <span class="k">print</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s">""</span><span class="p">)</span>
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><table class="rouge-line-table"><tbody><tr id="line-1" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>1</pre></td><td class="code"><pre><span class="c1">#!/usr/bin/python3</span>
+</pre></td></tr><tr id="line-2" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>2</pre></td><td class="code"><pre>
+</pre></td></tr><tr id="line-3" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>3</pre></td><td class="code"><pre><span class="c1"># My Apple TV won't send HDMI CEC volume control commands to my TV, seemingly because the TV</span>
+</pre></td></tr><tr id="line-4" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>4</pre></td><td class="code"><pre><span class="c1"># doesn't advertise itself as an audio sink. This program wraps cec-client, which pretends to</span>
+</pre></td></tr><tr id="line-5" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>5</pre></td><td class="code"><pre><span class="c1"># be an audio system, and forwards volume up/down commands that it receives from the Apple TV</span>
+</pre></td></tr><tr id="line-6" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>6</pre></td><td class="code"><pre><span class="c1"># to the TV.</span>
+</pre></td></tr><tr id="line-7" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>7</pre></td><td class="code"><pre>
+</pre></td></tr><tr id="line-8" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>8</pre></td><td class="code"><pre><span class="c1"># Launch automatically after boot by calling this script from /etc/rc.local</span>
+</pre></td></tr><tr id="line-9" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>9</pre></td><td class="code"><pre>
+</pre></td></tr><tr id="line-10" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>10</pre></td><td class="code"><pre><span class="kn">import</span> <span class="nn">re</span>
+</pre></td></tr><tr id="line-11" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>11</pre></td><td class="code"><pre><span class="kn">import</span> <span class="nn">subprocess</span>
+</pre></td></tr><tr id="line-12" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>12</pre></td><td class="code"><pre><span class="kn">from</span> <span class="nn">subprocess</span> <span class="kn">import</span> <span class="n">Popen</span><span class="p">,</span> <span class="n">PIPE</span>
+</pre></td></tr><tr id="line-13" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>13</pre></td><td class="code"><pre>
+</pre></td></tr><tr id="line-14" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>14</pre></td><td class="code"><pre><span class="c1"># CEC constants</span>
+</pre></td></tr><tr id="line-15" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>15</pre></td><td class="code"><pre><span class="n">TV</span> <span class="o">=</span> <span class="s">"0"</span>
+</pre></td></tr><tr id="line-16" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>16</pre></td><td class="code"><pre><span class="n">PLAYBACK_1</span> <span class="o">=</span> <span class="s">"4"</span>
+</pre></td></tr><tr id="line-17" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>17</pre></td><td class="code"><pre><span class="n">AUDIO_SYSTEM</span><span class="o">=</span> <span class="s">"5"</span>
+</pre></td></tr><tr id="line-18" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>18</pre></td><td class="code"><pre><span class="n">USER_CONTROL_PRESSED</span> <span class="o">=</span> <span class="s">"44"</span>
+</pre></td></tr><tr id="line-19" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>19</pre></td><td class="code"><pre><span class="n">USER_CONTROL_RELEASED</span> <span class="o">=</span> <span class="s">"45"</span>
+</pre></td></tr><tr id="line-20" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>20</pre></td><td class="code"><pre><span class="n">SYSTEM_AUDIO_MODE_STATUS</span> <span class="o">=</span> <span class="s">"7e"</span>
+</pre></td></tr><tr id="line-21" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>21</pre></td><td class="code"><pre><span class="n">SYSTEM_AUDIO_MODE_STATUS_OFF</span> <span class="o">=</span> <span class="s">"00"</span>
+</pre></td></tr><tr id="line-22" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>22</pre></td><td class="code"><pre><span class="n">SYSTEM_AUDIO_MODE_STATUS_ON</span> <span class="o">=</span> <span class="s">"01"</span>
+</pre></td></tr><tr id="line-23" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>23</pre></td><td class="code"><pre>
+</pre></td></tr><tr id="line-24" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>24</pre></td><td class="code"><pre><span class="c1"># Colour constants</span>
+</pre></td></tr><tr id="line-25" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>25</pre></td><td class="code"><pre><span class="n">RED</span> <span class="o">=</span> <span class="s">"</span><span class="se">\033</span><span class="s">[1;31m"</span>
+</pre></td></tr><tr id="line-26" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>26</pre></td><td class="code"><pre><span class="n">BLUE</span> <span class="o">=</span> <span class="s">"</span><span class="se">\033</span><span class="s">[1;34m"</span>
+</pre></td></tr><tr id="line-27" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>27</pre></td><td class="code"><pre><span class="n">NCOL</span> <span class="o">=</span> <span class="s">"</span><span class="se">\033</span><span class="s">[0m"</span>
+</pre></td></tr><tr id="line-28" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>28</pre></td><td class="code"><pre>
+</pre></td></tr><tr id="line-29" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>29</pre></td><td class="code"><pre><span class="c1"># Start cec-client with device type AUDIO_SYSTEM</span>
+</pre></td></tr><tr id="line-30" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>30</pre></td><td class="code"><pre><span class="n">proc</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">([</span><span class="s">"cec-client"</span><span class="p">,</span> <span class="s">"-t"</span><span class="p">,</span> <span class="s">"a"</span><span class="p">],</span> <span class="n">stdin</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">PIPE</span><span class="p">)</span>
+</pre></td></tr><tr id="line-31" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>31</pre></td><td class="code"><pre>
+</pre></td></tr><tr id="line-32" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>32</pre></td><td class="code"><pre><span class="c1"># Listen to the output from cec-client</span>
+</pre></td></tr><tr id="line-33" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>33</pre></td><td class="code"><pre><span class="k">for</span> <span class="n">line_bytes</span> <span class="ow">in</span> <span class="n">proc</span><span class="p">.</span><span class="n">stdout</span><span class="p">:</span>
+</pre></td></tr><tr id="line-34" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>34</pre></td><td class="code"><pre>  <span class="n">line</span> <span class="o">=</span> <span class="n">line_bytes</span><span class="p">.</span><span class="n">decode</span><span class="p">()</span>
+</pre></td></tr><tr id="line-35" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>35</pre></td><td class="code"><pre>
+</pre></td></tr><tr id="line-36" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>36</pre></td><td class="code"><pre>  <span class="c1"># Match sent or received CEC frames</span>
+</pre></td></tr><tr id="line-37" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>37</pre></td><td class="code"><pre>  <span class="n">frame</span> <span class="o">=</span> <span class="n">re</span><span class="p">.</span><span class="n">search</span><span class="p">(</span>
+</pre></td></tr><tr id="line-38" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>38</pre></td><td class="code"><pre>    <span class="s">"^TRAFFIC:.*(?:&gt;&gt;|&lt;&lt;) (?P&lt;src&gt;[0-9a-f])(?P&lt;dest&gt;[0-9a-f]):(?P&lt;op&gt;[0-9a-f]{2})(?P&lt;data&gt;(?::[0-9a-f]{2})*)"</span><span class="p">,</span>
+</pre></td></tr><tr id="line-39" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>39</pre></td><td class="code"><pre>    <span class="n">line</span>
+</pre></td></tr><tr id="line-40" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>40</pre></td><td class="code"><pre>  <span class="p">)</span>
+</pre></td></tr><tr id="line-41" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>41</pre></td><td class="code"><pre>
+</pre></td></tr><tr id="line-42" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>42</pre></td><td class="code"><pre>  <span class="k">if</span> <span class="p">(</span>
+</pre></td></tr><tr id="line-43" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>43</pre></td><td class="code"><pre>    <span class="n">frame</span>
+</pre></td></tr><tr id="line-44" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>44</pre></td><td class="code"><pre>    <span class="ow">and</span> <span class="n">frame</span><span class="p">.</span><span class="n">group</span><span class="p">(</span><span class="s">"src"</span><span class="p">)</span> <span class="o">==</span> <span class="n">PLAYBACK_1</span>
+</pre></td></tr><tr id="line-45" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>45</pre></td><td class="code"><pre>    <span class="ow">and</span> <span class="n">frame</span><span class="p">.</span><span class="n">group</span><span class="p">(</span><span class="s">"dest"</span><span class="p">)</span> <span class="o">==</span> <span class="n">AUDIO_SYSTEM</span>
+</pre></td></tr><tr id="line-46" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>46</pre></td><td class="code"><pre>    <span class="ow">and</span> <span class="n">frame</span><span class="p">.</span><span class="n">group</span><span class="p">(</span><span class="s">"op"</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="n">USER_CONTROL_PRESSED</span><span class="p">,</span> <span class="n">USER_CONTROL_RELEASED</span><span class="p">]</span>
+</pre></td></tr><tr id="line-47" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>47</pre></td><td class="code"><pre>  <span class="p">):</span>
+</pre></td></tr><tr id="line-48" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>48</pre></td><td class="code"><pre>    <span class="c1"># Forward any keypresses sent from PLAYBACK_1 to AUDIO_SYSTEM to TV</span>
+</pre></td></tr><tr id="line-49" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>49</pre></td><td class="code"><pre>    <span class="n">out</span> <span class="o">=</span> <span class="n">AUDIO_SYSTEM</span> <span class="o">+</span> <span class="n">TV</span> <span class="o">+</span> <span class="s">":"</span> <span class="o">+</span> <span class="n">frame</span><span class="p">.</span><span class="n">group</span><span class="p">(</span><span class="s">"op"</span><span class="p">)</span> <span class="o">+</span> <span class="n">frame</span><span class="p">.</span><span class="n">group</span><span class="p">(</span><span class="s">"data"</span><span class="p">)</span>
+</pre></td></tr><tr id="line-50" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>50</pre></td><td class="code"><pre>  <span class="k">elif</span> <span class="p">(</span>
+</pre></td></tr><tr id="line-51" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>51</pre></td><td class="code"><pre>    <span class="n">frame</span>
+</pre></td></tr><tr id="line-52" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>52</pre></td><td class="code"><pre>    <span class="ow">and</span> <span class="n">frame</span><span class="p">.</span><span class="n">group</span><span class="p">(</span><span class="s">"src"</span><span class="p">)</span> <span class="o">==</span> <span class="n">AUDIO_SYSTEM</span>
+</pre></td></tr><tr id="line-53" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>53</pre></td><td class="code"><pre>    <span class="ow">and</span> <span class="n">frame</span><span class="p">.</span><span class="n">group</span><span class="p">(</span><span class="s">"dest"</span><span class="p">)</span> <span class="o">==</span> <span class="n">PLAYBACK_1</span>
+</pre></td></tr><tr id="line-54" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>54</pre></td><td class="code"><pre>    <span class="ow">and</span> <span class="n">frame</span><span class="p">.</span><span class="n">group</span><span class="p">(</span><span class="s">"op"</span><span class="p">)</span> <span class="o">==</span> <span class="n">SYSTEM_AUDIO_MODE_STATUS</span>
+</pre></td></tr><tr id="line-55" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>55</pre></td><td class="code"><pre>    <span class="ow">and</span> <span class="n">frame</span><span class="p">.</span><span class="n">group</span><span class="p">(</span><span class="s">"data"</span><span class="p">)</span> <span class="o">==</span> <span class="s">":"</span> <span class="o">+</span> <span class="n">SYSTEM_AUDIO_MODE_STATUS_OFF</span>
+</pre></td></tr><tr id="line-56" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>56</pre></td><td class="code"><pre>  <span class="p">):</span>
+</pre></td></tr><tr id="line-57" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>57</pre></td><td class="code"><pre>    <span class="c1"># If cec-client tells PLAYBACK_1 that the system audio mode status is "off", immediately send</span>
+</pre></td></tr><tr id="line-58" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>58</pre></td><td class="code"><pre>    <span class="c1"># another message indicating that it's really "on". Although a lie, this is necessary because,</span>
+</pre></td></tr><tr id="line-59" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>59</pre></td><td class="code"><pre>    <span class="c1"># for some reason, the Apple TV queries the system audio mode status FIRST thing after waking</span>
+</pre></td></tr><tr id="line-60" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>60</pre></td><td class="code"><pre>    <span class="c1"># up, before even turning the TV on or setting itself as the active source. At that point, of</span>
+</pre></td></tr><tr id="line-61" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>61</pre></td><td class="code"><pre>    <span class="c1"># course the system audio mode status is "off", because it's the TV that sets it to "on" after</span>
+</pre></td></tr><tr id="line-62" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>62</pre></td><td class="code"><pre>    <span class="c1"># it is itself woken up. The Apple TV never asks for the status again and ignores messages</span>
+</pre></td></tr><tr id="line-63" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>63</pre></td><td class="code"><pre>    <span class="c1"># between the TV and AUDIO_SYSTEM setting the status to "on". It assumes, incorrectly, that</span>
+</pre></td></tr><tr id="line-64" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>64</pre></td><td class="code"><pre>    <span class="c1"># the status at the time it was awoken is permanent.</span>
+</pre></td></tr><tr id="line-65" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>65</pre></td><td class="code"><pre>    <span class="n">out</span> <span class="o">=</span> <span class="n">AUDIO_SYSTEM</span> <span class="o">+</span> <span class="n">PLAYBACK_1</span> <span class="o">+</span> <span class="s">":"</span> <span class="o">+</span> <span class="n">SYSTEM_AUDIO_MODE_STATUS</span> <span class="o">+</span> <span class="s">":"</span> <span class="o">+</span> <span class="n">SYSTEM_AUDIO_MODE_STATUS_ON</span>
+</pre></td></tr><tr id="line-66" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>66</pre></td><td class="code"><pre>  <span class="k">else</span><span class="p">:</span>
+</pre></td></tr><tr id="line-67" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>67</pre></td><td class="code"><pre>    <span class="n">out</span> <span class="o">=</span> <span class="bp">None</span>
+</pre></td></tr><tr id="line-68" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>68</pre></td><td class="code"><pre>
+</pre></td></tr><tr id="line-69" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>69</pre></td><td class="code"><pre>  <span class="c1"># Print output with important lines coloured</span>
+</pre></td></tr><tr id="line-70" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>70</pre></td><td class="code"><pre>  <span class="k">if</span> <span class="n">out</span><span class="p">:</span>
+</pre></td></tr><tr id="line-71" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>71</pre></td><td class="code"><pre>    <span class="n">proc</span><span class="p">.</span><span class="n">stdin</span><span class="p">.</span><span class="n">write</span><span class="p">((</span><span class="s">"tx "</span> <span class="o">+</span> <span class="n">out</span> <span class="o">+</span> <span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">).</span><span class="n">encode</span><span class="p">())</span>
+</pre></td></tr><tr id="line-72" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>72</pre></td><td class="code"><pre>    <span class="n">proc</span><span class="p">.</span><span class="n">stdin</span><span class="p">.</span><span class="n">flush</span><span class="p">()</span>
+</pre></td></tr><tr id="line-73" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>73</pre></td><td class="code"><pre>
+</pre></td></tr><tr id="line-74" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>74</pre></td><td class="code"><pre>    <span class="k">print</span><span class="p">(</span><span class="n">BLUE</span> <span class="o">+</span> <span class="n">line</span> <span class="o">+</span> <span class="n">NCOL</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s">""</span><span class="p">)</span>
+</pre></td></tr><tr id="line-75" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>75</pre></td><td class="code"><pre>    <span class="k">print</span><span class="p">(</span><span class="n">RED</span> <span class="o">+</span> <span class="s">"Sending frame: "</span> <span class="o">+</span> <span class="n">out</span> <span class="o">+</span> <span class="n">NCOL</span><span class="p">)</span>
+</pre></td></tr><tr id="line-76" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>76</pre></td><td class="code"><pre>  <span class="k">else</span><span class="p">:</span>
+</pre></td></tr><tr id="line-77" class="lineno"><td class="gutter gl" style="-moz-user-select: none;-ms-user-select: none;-webkit-user-select: none;user-select: none;"><pre>77</pre></td><td class="code"><pre>    <span class="k">print</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s">""</span><span class="p">)</span>
 </pre></td></tr></tbody></table></code></pre></figure>
 
 <hr />
