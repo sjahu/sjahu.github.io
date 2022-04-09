@@ -3,11 +3,11 @@
   .rouge-line-table tr > td {
     padding: 0 5px; }
   .rouge-line-table .rouge-gutter, .rouge-line-table .rouge-code {
-    text-align: right;
     vertical-align: top; }
     .rouge-line-table .rouge-gutter pre, .rouge-line-table .rouge-code pre {
       margin: 0; }
   .rouge-line-table .rouge-gutter {
+    text-align: right;
     opacity: 20%; }
 
 /* Copied from https://github.com/jekyll/minima/blob/master/_sass/minima/skins/classic.scss */
