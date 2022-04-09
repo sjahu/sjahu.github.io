@@ -1,5 +1,15 @@
-.highlight {
-  .lineno {
+.rouge-line-table {
+  border-collapse: collapse;
+
+  tr > td { padding: 0 5px; }
+
+  .rouge-gutter, .rouge-code {
+    vertical-align: top;
+    pre { margin: 0; }
+  }
+
+  .rouge-gutter {
+    text-align: right;
     opacity: 20%;
   }
 }
