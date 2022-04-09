@@ -61,6 +61,10 @@ Either way, I'm thrilled that this worked and I'm settling happily in to zero re
 
 ---
 
+![](/assets/images/blog/2022-04-06/diagram.png)
+
+---
+
 *cec_vol.py*:
 
 {% highlight python linenos %}
