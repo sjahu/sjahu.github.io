@@ -4,6 +4,7 @@ body {
   padding: 16px;
   font-family: "EB Garamond", "Times New Roman", "serif";
   word-wrap: break-word;
+  color: #333;
 }
 
 img {
@@ -23,4 +24,16 @@ code.language-plaintext {
 
 nav a {
   margin-right: 16px;
+}
+
+a {
+  &:link, &:visited {
+    color: inherit;
+  }
+  &:hover {
+    text-decoration: none;
+  }
+  &:active {
+    color: red;
+  }
 }
