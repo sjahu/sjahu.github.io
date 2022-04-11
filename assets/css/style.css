@@ -151,7 +151,8 @@ body {
   padding: 16px;
   font-family: "EB Garamond", "Times New Roman", "serif";
   word-wrap: break-word;
-  color: #333; }
+  color: #333;
+  background-color: whitesmoke; }
 
 img {
   max-width: 100%; }
@@ -168,10 +169,12 @@ code.language-plaintext {
 nav a {
   margin-right: 16px; }
 
-a:link {
+a:link, a:visited {
   color: inherit; }
 a:hover {
   text-decoration: none; }
+a:active {
+  color: red; }
 
 .post-title {
   margin-bottom: 0px; }
