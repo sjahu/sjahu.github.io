@@ -150,7 +150,8 @@ body {
   margin: 0 auto;
   padding: 16px;
   font-family: "EB Garamond", "Times New Roman", "serif";
-  word-wrap: break-word; }
+  word-wrap: break-word;
+  color: #333; }
 
 img {
   max-width: 100%; }
@@ -166,6 +167,11 @@ code.language-plaintext {
 
 nav a {
   margin-right: 16px; }
+
+a:link {
+  color: inherit; }
+a:hover {
+  text-decoration: none; }
 
 .post-title {
   margin-bottom: 0px; }
