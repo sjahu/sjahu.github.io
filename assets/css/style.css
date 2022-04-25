@@ -10,6 +10,9 @@
     text-align: right;
     opacity: 20%; }
 
+figure.highlight {
+  margin: 0; }
+
 /* Copied from https://github.com/jekyll/minima/blob/master/_sass/minima/skins/classic.scss */
 .highlight .c {
   color: #998;
