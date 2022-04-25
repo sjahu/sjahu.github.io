@@ -32,7 +32,7 @@
 
 <p>On the computer side of things, I wrote a quick script to monitor the log written by <a href="https://obdev.at/products/microsnitch">Micro Snitch</a> (a little app that watches the status of connected microphones and cameras) and turn on the LED when a device becomes active. Based on a cursory search, I decided that figuring out how to check mic and camera statuses myself would be a waste of time when Micro Snitch does it so well. For USB communication, I used <a href="https://github.com/digistump/DigisparkArduinoIntegration/tree/master/libraries/DigisparkUSB">DigiUSB</a>, a firmware-only USB driver for the microcontroller that pairs with a <a href="https://rubygems.org/gems/digiusb/versions/1.0.5">handy rubygem</a> to provide a serial-terminal-like interface between the computer and Digispark. Another library, DigiCDC, was supposed to be able to emulate a virtual serial device (which the computer could communicate with natively, no specific software required), but it didn’t seem to be compatible with macOS.</p>
 
-<p>I loaded the Arduino sketch onto the Digispark, set the ruby script to launch at login on my computer, and stuck the LED board to the back of my monitor, where it’s in plain view as you approach my desk. (I added an origami waterbomb diffuser to soften the light a little bit.) Ta-da:</p>
+<p>I loaded the Arduino sketch onto the Digispark, set the ruby script to launch at login on my computer, and stuck the LED board to the back of my monitor, where it’s in plain view as you approach my desk. (I added an origami waterbomb as a diffuser to soften the light a little bit.) Ta-da:</p>
 
 <p><img src="/assets/images/blog/2022-04-24/on_air.jpg" alt="" /></p>
 
