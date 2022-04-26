@@ -1,21 +1,30 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <title>{{ page.title }} | {{ site.title }}</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/assets/css/style.css">
-  </head>
-  <body>
-    <nav>
-      <a href="/">Home</a>
-      <a href="/blog">Blog</a>
-    </nav>
-    <div class="default-content">
-      {{ content }}
-    </div>
-    <footer>
-      <center><sub>Copyright &copy; {{ site.time | date: "%Y" }} {{ site.copyright }}</sub></center>
-    </footer>
-  </body>
+
+<head>
+  <title>{{ page.title }} | {{ site.title }}</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+
+<body>
+  {% unless page.no_header_footer %}
+  <nav>
+    <a href="/">Home</a>
+    <a href="/blog">Blog</a>
+  </nav>
+  {% endunless %}
+
+  <div class="default-content">
+    {{ content }}
+  </div>
+
+  {% unless page.no_header_footer %}
+  <footer>
+    <center><sub>Copyright &copy; {{ site.time | date: "%Y" }} {{ site.copyright }}</sub></center>
+  </footer>
+  {% endunless %}
+</body>
+
 </html>
