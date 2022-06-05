@@ -175,7 +175,7 @@ body {
   position: absolute;
   bottom: 0;
   height: 40px;
-  padding-bottom: padding;
+  padding-bottom: 16px;
   overflow: hidden;
   text-align: center;
   width: 100%; }
