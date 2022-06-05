@@ -9,22 +9,28 @@
 </head>
 
 <body>
-  {% unless page.no_header_footer %}
-  <nav>
-    <a href="/">Home</a>
-    <a href="/blog">Blog</a>
-  </nav>
-  {% endunless %}
+  <div id="default-container">
+    <div id="default-header">
+      {% unless page.no_header_footer %}
+      <nav>
+        <a href="/">Home</a>
+        <a href="/blog">Blog</a>
+      </nav>
+      {% endunless %}
+    </div>
 
-  <div class="default-content">
-    {{ content }}
+    <div id="default-content">
+      {{ content }}
+    </div>
+
+    <div id="default-footer">
+      {% unless page.no_header_footer %}
+      <footer>
+        <small>Copyright &copy; {{ site.time | date: "%Y" }} {{ site.copyright }}</small>
+      </footer>
+      {% endunless %}
+    </div>
   </div>
-
-  {% unless page.no_header_footer %}
-  <footer>
-    <center><sub>Copyright &copy; {{ site.time | date: "%Y" }} {{ site.copyright }}</sub></center>
-  </footer>
-  {% endunless %}
 </body>
 
 </html>

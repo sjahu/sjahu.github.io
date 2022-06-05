@@ -1,10 +1,43 @@
+$footer-height: 40px;
+$padding: 16px;
+$max-width: 1024px;
+
+html {
+  height: 100%;
+}
+
 body {
-  max-width: 1024px;
-  margin: 0 auto;
-  padding: 16px;
   font-family: "EB Garamond", "Times New Roman", "serif";
   word-wrap: break-word;
   color: #333;
+  height: 100%;
+  max-width: $max-width;
+  margin: auto;
+  padding-left: $padding;
+  padding-right: $padding;
+}
+
+#default-container {
+  min-height: 100%;
+  position: relative;
+}
+
+#default-header {
+  padding-top: $padding;
+}
+
+#default-content {
+  padding-bottom: $padding + $footer-height;
+}
+
+#default-footer {
+  position: absolute;
+  bottom: 0;
+  height: $footer-height;
+  padding-bottom: $padding;
+  overflow: hidden;
+  text-align: center;
+  width: 100%;
 }
 
 img {
