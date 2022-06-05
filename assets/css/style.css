@@ -169,7 +169,7 @@ body {
   padding-top: 16px; }
 
 #default-content {
-  padding-bottom: calc($padding + $footer-height); }
+  padding-bottom: 56px; }
 
 #default-footer {
   position: absolute;
