@@ -148,13 +148,37 @@ figure.highlight {
 .highlight .il {
   color: #099; }
 
+html {
+  height: 100%; }
+
 body {
-  max-width: 1024px;
-  margin: 0 auto;
-  padding: 16px;
   font-family: "EB Garamond", "Times New Roman", "serif";
   word-wrap: break-word;
-  color: #333; }
+  color: #333;
+  height: 100%;
+  max-width: 1024px;
+  margin: auto;
+  padding-left: 16px;
+  padding-right: 16px; }
+
+#default-container {
+  min-height: 100%;
+  position: relative; }
+
+#default-header {
+  padding-top: 16px; }
+
+#default-content {
+  padding-bottom: calc($padding + $footer-height); }
+
+#default-footer {
+  position: absolute;
+  bottom: 0;
+  height: 40px;
+  padding-bottom: padding;
+  overflow: hidden;
+  text-align: center;
+  width: 100%; }
 
 img {
   max-width: 100%; }
