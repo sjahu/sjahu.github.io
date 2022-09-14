@@ -10,4 +10,4 @@ _Connect with me on [LinkedIn](https://www.linkedin.com/in/sjahumphries/), [GitH
 ## 👋 Hi
 Welcome to my corner of the Internet.
 
-Use the links above to get in touch or check out the [blog](/blog) to see what I've been up to.
+Use the links above to get in touch or check out my [blog](/blog) to see what I've been up to.
