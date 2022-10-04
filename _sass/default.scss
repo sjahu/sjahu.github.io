@@ -41,7 +41,16 @@ body {
 }
 
 img {
+  display: block;
   max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+
+  &.tiny { width: 200px; }
+  &.small { width: 400px; }
+  &.medium { width: 600px; }
+  &.large { width: 800px; }
+  &.huge { width: 1000px; }
 }
 
 pre {
