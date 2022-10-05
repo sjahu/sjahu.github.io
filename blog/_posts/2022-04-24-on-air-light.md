@@ -12,7 +12,7 @@ Although Amazon sells dozens of different brands of LED light strips, I couldn't
 
 I soldered an RGB LED to a [very cheap Arduino-compatible microcontroller breakout board](https://www.aliexpress.com/item/2043055746.html) (a knock-off of the [Digispark](https://www.kickstarter.com/projects/digistump/digispark-the-tiny-arduino-enabled-usb-dev-board), which I don't think you can buy officially anymore), and wrote a quick sketch ([Arduino](https://www.arduino.cc/en/Guide/Introduction)-speak for program) to listen for colour codes sent over the USB cable. I also removed the board's built-in test and power LEDs, since the power indicator would annoyingly be on all the time and the test LED shared a circuit with one of pins I had to use for the RGB LED.
 
-![](/assets/images/blog/2022-04-24/digispark.jpg)
+{% image /assets/images/blog/2022-04-24/digispark.jpg medium %}
 
 The sketch (code below) is pretty simple; it listens for a colour code in typical 8-bit-per-colour RGB hex format (e.g. `ff0000` for red) and sets the three coloured LEDs to the appropriate brightnesses. The only complication was that the ATtiny85 microcontroller onboard the Digispark has only three [PWM](https://en.wikipedia.org/wiki/Pulse-width_modulation)-capable pins and one of them is used for USB purposes; the hacky software-based PWM implemented in my sketch is to get around that limitation (although, since I ended up only driving the LEDs at full duty cycles anyway, it ended up being overkill).
 
@@ -20,7 +20,7 @@ On the computer side of things, I wrote a quick script to monitor the log writte
 
 I loaded the Arduino sketch onto the Digispark, set the ruby script to launch at login on my computer, and stuck the LED board to the back of my monitor, where it's in plain view as you approach my desk. (I added an origami waterbomb as a diffuser to soften the light a little bit.) Ta-da:
 
-![](/assets/images/blog/2022-04-24/on_air.jpg)
+{% image /assets/images/blog/2022-04-24/on_air.jpg %}
 
 ---
 

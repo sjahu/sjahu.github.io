@@ -20,7 +20,7 @@ Hold on-- doesn't a Raspberry Pi have an HDMI output onboard anyway? Yes it does
 
 I downloaded the latest headless version of [Raspberry Pi OS](https://www.raspberrypi.com/software/operating-systems/#raspberry-pi-os-32-bit), flashed it to a micro SD card, and configured the OS to [allow SSH connections over the USB cable](https://learn.adafruit.com/turning-your-raspberry-pi-zero-into-a-usb-gadget) (technically, that means enabling USB On-The-Go and the `g_ether` kernel module). Once I had managed to find a micro USB cable that wasn't power-only, I was able to connect to the Pi from my laptop.
 
-![](/assets/images/blog/2022-04-06/setup.jpg)
+{% image /assets/images/blog/2022-04-06/setup.jpg %}
 
 Pulse-Eight bundles `libcec` in a package called [`cec-utils`](https://packages.debian.org/bullseye/cec-utils), which also contains a demo client program, `cec-client`. The help docs for `cec-client`, which describe what it can do, can be found [here](https://github.com/Pulse-Eight/libcec/blob/76551ea1dd9a55f0ce1533e440dc12dbc594f7ba/src/cec-client/cec-client.cpp#L291-L365) or be printed out by the program itself.
 
@@ -34,7 +34,7 @@ CEC frames consist of a series of bytes. The first two [nibbles](https://en.wiki
 
 ---
 
-![](/assets/images/blog/2022-04-06/cec-client.png)
+{% image /assets/images/blog/2022-04-06/cec-client.png %}
 
 The CEC frame sent from the Apple TV to the Raspberry Pi to turn up the volume looks like this: `45:44:41`. `45` for "Device 4 (Playback 1) to Device 5 (Audio System)", `44` for "User Control Pressed", and `41` for "Volume Up". On a whim, I tried transmitting a similar frame, `50:44:41`, using `cec-client`'s `tx` command. To my surprise, this did exactly what it should have: it turned up the volume on the TV, no infrared necessary. I thought, well that's weird, but I'll take it. This development would make things much easier; instead of wiring up the infrared LED and figuring out how to record and play back the right signals, I could just forward commands received by the Raspberry Pi directly to the TV via CEC.
 
@@ -42,7 +42,7 @@ I wrote a quick little Python script to wrap `cec-client` and forward key presse
 
 The CEC volume control had noticeably more latency than the infrared remote, which changed the volume virtually instantaneously. This might be marginally improved by replacing my text-scraping script with a proper library-based CEC client implementation, but each 3-byte frame takes about 90 ms to transmit, so, doubling that to account for repeating the message, there's a strict 180 ms lower bound on performance anyway. It's still only a small fraction of a second, so I decided I could live with it.
 
-![](/assets/images/blog/2022-04-06/demo.jpg)
+{% image /assets/images/blog/2022-04-06/demo.jpg %}
 
 ## Almost there...
 
@@ -52,7 +52,7 @@ Perusing the output from the trace, I discovered that there was a difference bet
 
 I thought, at this point, that I might have to implement my own client using `libcec` after all in order to be able to tell the Apple TV that the System Audio Mode Status was "on" when it was really "off". Luckily, though, the Apple TV was willing to accept an unsolicited `54:7e:01` frame even after its initial wake-up routine which immediately made the volume control in the iPhone remote available. I updated my script to listen for any `54:7e:00` frame and immediately follow it up with `54:7e:01`. This solved the problem without having to drop down a level. Very nice.
 
-![](/assets/images/blog/2022-04-06/tidy.jpg)
+{% image /assets/images/blog/2022-04-06/tidy.jpg %}
 ## Why?
 
 It's not totally clear to me who's to blame for the incompatibility between the Apple TV and my TV, which is manufactured by TCL and runs a Roku operating system. The Apple TV seems to always send a `45:7d` frame when it wakes up and only enables the volume control feature if that message is both acknowledged and elicits a `54:7e:01` response. The TV could accommodate this behaviour by advertising itself as an Audio System (when no external amplifier is connected) as well as as a TV; the same physical device can be multiple CEC logical devices. Alternatively, to determine whether volume control is supported, the Apple TV could attempt to send a volume control frame to the TV, which could accept it or refuse it via a `00` abort message. I'm far from an expert, but I suspect the Apple TV is correct in its implementation (aside from its deficiency in checking the system audio status before turning any of the devices on-- that's a bug, in my opinion). System Audio Mode appears to be designed with external audio systems in mind, so it seems reasonable for the Apple TV to assume that any controllable audio system would respond to messages sent to Device 5.
@@ -61,7 +61,7 @@ Either way, I'm thrilled that this worked and I'm settling happily in to zero re
 
 ---
 
-![](/assets/images/blog/2022-04-06/diagram.png)
+{% image /assets/images/blog/2022-04-06/diagram.png %}
 
 ---
 
