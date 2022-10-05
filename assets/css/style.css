@@ -181,8 +181,22 @@ body {
   width: 100%; }
 
 img {
-  max-width: 100%; }
+  display: block;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto; }
+  img.tiny {
+    width: 200px; }
+  img.small {
+    width: 400px; }
+  img.medium {
+    width: 600px; }
+  img.large {
+    width: 800px; }
+  img.huge {
+    width: 1000px; }
 
+img
 pre {
   white-space: pre-wrap; }
 

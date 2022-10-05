@@ -34,7 +34,7 @@
 
 <p>I soldered an RGB LED to a <a href="https://www.aliexpress.com/item/2043055746.html">very cheap Arduino-compatible microcontroller breakout board</a> (a knock-off of the <a href="https://www.kickstarter.com/projects/digistump/digispark-the-tiny-arduino-enabled-usb-dev-board">Digispark</a>, which I don’t think you can buy officially anymore), and wrote a quick sketch (<a href="https://www.arduino.cc/en/Guide/Introduction">Arduino</a>-speak for program) to listen for colour codes sent over the USB cable. I also removed the board’s built-in test and power LEDs, since the power indicator would annoyingly be on all the time and the test LED shared a circuit with one of pins I had to use for the RGB LED.</p>
 
-<p><img src="/assets/images/blog/2022-04-24/digispark.jpg" alt="" /></p>
+<p><img src="/assets/images/blog/2022-04-24/digispark.jpg" class="medium" /></p>
 
 <p>The sketch (code below) is pretty simple; it listens for a colour code in typical 8-bit-per-colour RGB hex format (e.g. <code class="language-plaintext highlighter-rouge">ff0000</code> for red) and sets the three coloured LEDs to the appropriate brightnesses. The only complication was that the ATtiny85 microcontroller onboard the Digispark has only three <a href="https://en.wikipedia.org/wiki/Pulse-width_modulation">PWM</a>-capable pins and one of them is used for USB purposes; the hacky software-based PWM implemented in my sketch is to get around that limitation (although, since I ended up only driving the LEDs at full duty cycles anyway, it ended up being overkill).</p>
 
@@ -42,7 +42,7 @@
 
 <p>I loaded the Arduino sketch onto the Digispark, set the ruby script to launch at login on my computer, and stuck the LED board to the back of my monitor, where it’s in plain view as you approach my desk. (I added an origami waterbomb as a diffuser to soften the light a little bit.) Ta-da:</p>
 
-<p><img src="/assets/images/blog/2022-04-24/on_air.jpg" alt="" /></p>
+<p><img src="/assets/images/blog/2022-04-24/on_air.jpg" /></p>
 
 <hr />
 

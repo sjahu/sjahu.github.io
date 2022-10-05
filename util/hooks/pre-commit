@@ -1,0 +1,23 @@
+#!/bin/zsh
+
+if ! which exiftool > /dev/null; then
+  echo "exiftool is not installed! Install it."
+  return 1
+fi
+
+# IMAGES=$(find assets -iregex '.*\.jpe?g')
+IMAGES=$(git diff --name-only --cached | grep -iE '\.jpe?g$')
+
+if [[ -n "$IMAGES" ]]; then
+  echo "======================================="
+
+  echo "Removing location metadata from images:"
+  echo "$IMAGES"
+
+  echo $IMAGES | xargs exiftool -gps:all=
+  git add $IMAGES
+
+  echo "======================================="
+fi
+
+true

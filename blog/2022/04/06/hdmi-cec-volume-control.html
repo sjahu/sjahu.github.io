@@ -47,7 +47,7 @@
 
 <p>I downloaded the latest headless version of <a href="https://www.raspberrypi.com/software/operating-systems/#raspberry-pi-os-32-bit">Raspberry Pi OS</a>, flashed it to a micro SD card, and configured the OS to <a href="https://learn.adafruit.com/turning-your-raspberry-pi-zero-into-a-usb-gadget">allow SSH connections over the USB cable</a> (technically, that means enabling USB On-The-Go and the <code class="language-plaintext highlighter-rouge">g_ether</code> kernel module). Once I had managed to find a micro USB cable that wasn’t power-only, I was able to connect to the Pi from my laptop.</p>
 
-<p><img src="/assets/images/blog/2022-04-06/setup.jpg" alt="" /></p>
+<p><img src="/assets/images/blog/2022-04-06/setup.jpg" /></p>
 
 <p>Pulse-Eight bundles <code class="language-plaintext highlighter-rouge">libcec</code> in a package called <a href="https://packages.debian.org/bullseye/cec-utils"><code class="language-plaintext highlighter-rouge">cec-utils</code></a>, which also contains a demo client program, <code class="language-plaintext highlighter-rouge">cec-client</code>. The help docs for <code class="language-plaintext highlighter-rouge">cec-client</code>, which describe what it can do, can be found <a href="https://github.com/Pulse-Eight/libcec/blob/76551ea1dd9a55f0ce1533e440dc12dbc594f7ba/src/cec-client/cec-client.cpp#L291-L365">here</a> or be printed out by the program itself.</p>
 
@@ -61,7 +61,7 @@
 
 <hr />
 
-<p><img src="/assets/images/blog/2022-04-06/cec-client.png" alt="" /></p>
+<p><img src="/assets/images/blog/2022-04-06/cec-client.png" /></p>
 
 <p>The CEC frame sent from the Apple TV to the Raspberry Pi to turn up the volume looks like this: <code class="language-plaintext highlighter-rouge">45:44:41</code>. <code class="language-plaintext highlighter-rouge">45</code> for “Device 4 (Playback 1) to Device 5 (Audio System)”, <code class="language-plaintext highlighter-rouge">44</code> for “User Control Pressed”, and <code class="language-plaintext highlighter-rouge">41</code> for “Volume Up”. On a whim, I tried transmitting a similar frame, <code class="language-plaintext highlighter-rouge">50:44:41</code>, using <code class="language-plaintext highlighter-rouge">cec-client</code>’s <code class="language-plaintext highlighter-rouge">tx</code> command. To my surprise, this did exactly what it should have: it turned up the volume on the TV, no infrared necessary. I thought, well that’s weird, but I’ll take it. This development would make things much easier; instead of wiring up the infrared LED and figuring out how to record and play back the right signals, I could just forward commands received by the Raspberry Pi directly to the TV via CEC.</p>
 
@@ -69,7 +69,7 @@
 
 <p>The CEC volume control had noticeably more latency than the infrared remote, which changed the volume virtually instantaneously. This might be marginally improved by replacing my text-scraping script with a proper library-based CEC client implementation, but each 3-byte frame takes about 90 ms to transmit, so, doubling that to account for repeating the message, there’s a strict 180 ms lower bound on performance anyway. It’s still only a small fraction of a second, so I decided I could live with it.</p>
 
-<p><img src="/assets/images/blog/2022-04-06/demo.jpg" alt="" /></p>
+<p><img src="/assets/images/blog/2022-04-06/demo.jpg" /></p>
 
 <h2 id="almost-there">Almost there…</h2>
 
@@ -79,7 +79,7 @@
 
 <p>I thought, at this point, that I might have to implement my own client using <code class="language-plaintext highlighter-rouge">libcec</code> after all in order to be able to tell the Apple TV that the System Audio Mode Status was “on” when it was really “off”. Luckily, though, the Apple TV was willing to accept an unsolicited <code class="language-plaintext highlighter-rouge">54:7e:01</code> frame even after its initial wake-up routine which immediately made the volume control in the iPhone remote available. I updated my script to listen for any <code class="language-plaintext highlighter-rouge">54:7e:00</code> frame and immediately follow it up with <code class="language-plaintext highlighter-rouge">54:7e:01</code>. This solved the problem without having to drop down a level. Very nice.</p>
 
-<p><img src="/assets/images/blog/2022-04-06/tidy.jpg" alt="" /></p>
+<p><img src="/assets/images/blog/2022-04-06/tidy.jpg" /></p>
 <h2 id="why">Why?</h2>
 
 <p>It’s not totally clear to me who’s to blame for the incompatibility between the Apple TV and my TV, which is manufactured by TCL and runs a Roku operating system. The Apple TV seems to always send a <code class="language-plaintext highlighter-rouge">45:7d</code> frame when it wakes up and only enables the volume control feature if that message is both acknowledged and elicits a <code class="language-plaintext highlighter-rouge">54:7e:01</code> response. The TV could accommodate this behaviour by advertising itself as an Audio System (when no external amplifier is connected) as well as as a TV; the same physical device can be multiple CEC logical devices. Alternatively, to determine whether volume control is supported, the Apple TV could attempt to send a volume control frame to the TV, which could accept it or refuse it via a <code class="language-plaintext highlighter-rouge">00</code> abort message. I’m far from an expert, but I suspect the Apple TV is correct in its implementation (aside from its deficiency in checking the system audio status before turning any of the devices on– that’s a bug, in my opinion). System Audio Mode appears to be designed with external audio systems in mind, so it seems reasonable for the Apple TV to assume that any controllable audio system would respond to messages sent to Device 5.</p>
@@ -88,7 +88,7 @@
 
 <hr />
 
-<p><img src="/assets/images/blog/2022-04-06/diagram.png" alt="" /></p>
+<p><img src="/assets/images/blog/2022-04-06/diagram.png" /></p>
 
 <hr />
 
