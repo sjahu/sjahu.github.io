@@ -9,6 +9,8 @@
   .rouge-line-table .rouge-gutter {
     text-align: right;
     opacity: 20%; }
+  .rouge-line-table .rouge-code {
+    word-break: break-all; }
 
 figure.highlight {
   margin: 0; }
