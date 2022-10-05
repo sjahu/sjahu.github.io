@@ -1,4 +1,6 @@
 .DS_Store
-.vscode
 .bundle
+.vscode
+.sass-cache
+_site
 vendor
