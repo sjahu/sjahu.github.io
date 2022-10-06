@@ -1,44 +1,42 @@
-<rss version="2.0">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Stephen's Site</title>
     <link>https://shumphries.ca//blog</link>
+    <atom:link href="" rel="self" type="application/rss+xml"/>
     <description></description>
     <language>en-CA</language>
     <copyright>Copyright &#169; 2022 Stephen Humphries</copyright>
     <pubDate>Tue, 04 Oct 2022 00:00:00 +0000</pubDate>
     <lastBuildDate>Tue, 04 Oct 2022 00:00:00 +0000</lastBuildDate>
     <docs>https://www.rssboard.org/rss-specification</docs>
-    <image>
-      <url>https://shumphries.ca//favicon.ico</url>
-    </image>
+    
+    <item>
+        <title>Smartening up my dumb vacuum</title>
+        <link>https://shumphries.ca//blog/2022/10/04/wifi-vacuum.html</link>
+        <description>For the last couple years, I’ve had a habit of vacuuming my apartment Thursday afternoons while listening to a weekly live-streamed all-hands meeting for work. Mid summer, this meeting was rescheduled to a monthly cadence, so, with my dedicated vacuuming time gone and my floor getting dusty, I bought a robot vacuum.</description>
+        <pubDate>Tue, 04 Oct 2022 00:00:00 +0000</pubDate>
+    </item>
+    
+    <item>
+        <title>Rigging up an automatic On-Air light for my work computer</title>
+        <link>https://shumphries.ca//blog/2022/04/24/on-air-light.html</link>
+        <description>Nobody wants to be interrupted in a work meeting or, worse, inadvertently star in the background of a partner or roommate’s video call, so I imagine that other working-from-home people have also devised complex systems of hand/face/phone/eyebrow signals to silently communicate microphone and camera statuses at a distance. That’s stone age tech, though; the broadcasting industry solved this problem decades ago by installing bright red “On Air” lights outside studio doors that indicate when a studio is in use.</description>
+        <pubDate>Sun, 24 Apr 2022 00:00:00 +0000</pubDate>
+    </item>
+    
+    <item>
+        <title>Forwarding HDMI CEC volume control messages to my TV</title>
+        <link>https://shumphries.ca//blog/2022/04/06/hdmi-cec-volume-control.html</link>
+        <description>In a recent article shared on Hacker News, the author detailed his attempt at creating the smallest and worst HDMI display by abusing the i2c bus that powers the Display Data Channel protocol. The comments prompted me to read up on another constituent protocol of HDMI that I had, up to that point, taken for granted: Consumer Electronics Control (CEC).</description>
+        <pubDate>Wed, 06 Apr 2022 00:00:00 +0000</pubDate>
+    </item>
+    
+    <item>
+        <title>Hello, world!</title>
+        <link>https://shumphries.ca//blog/2021/01/27/hello-world.html</link>
+        <description>Hello, world. Welcome to my website.</description>
+        <pubDate>Wed, 27 Jan 2021 00:00:00 +0000</pubDate>
+    </item>
+    
   </channel>
-  
-  <item>
-    <title>Smartening up my dumb vacuum</title>
-    <link>https://shumphries.ca//blog/2022/10/04/wifi-vacuum.html</link>
-    <description>For the last couple years, I’ve had a habit of vacuuming my apartment Thursday afternoons while listening to a weekly live-streamed all-hands meeting for work. Mid summer, this meeting was rescheduled to a monthly cadence, so, with my dedicated vacuuming time gone and my floor getting dusty, I bought a robot vacuum.</description>
-    <pubDate>Tue, 04 Oct 2022 00:00:00 +0000</pubDate>
-  </item>
-  
-  <item>
-    <title>Rigging up an automatic On-Air light for my work computer</title>
-    <link>https://shumphries.ca//blog/2022/04/24/on-air-light.html</link>
-    <description>Nobody wants to be interrupted in a work meeting or, worse, inadvertently star in the background of a partner or roommate’s video call, so I imagine that other working-from-home people have also devised complex systems of hand/face/phone/eyebrow signals to silently communicate microphone and camera statuses at a distance. That’s stone age tech, though; the broadcasting industry solved this problem decades ago by installing bright red “On Air” lights outside studio doors that indicate when a studio is in use.</description>
-    <pubDate>Sun, 24 Apr 2022 00:00:00 +0000</pubDate>
-  </item>
-  
-  <item>
-    <title>Forwarding HDMI CEC volume control messages to my TV</title>
-    <link>https://shumphries.ca//blog/2022/04/06/hdmi-cec-volume-control.html</link>
-    <description>In a recent article shared on Hacker News, the author detailed his attempt at creating the smallest and worst HDMI display by abusing the i2c bus that powers the Display Data Channel protocol. The comments prompted me to read up on another constituent protocol of HDMI that I had, up to that point, taken for granted: Consumer Electronics Control (CEC).</description>
-    <pubDate>Wed, 06 Apr 2022 00:00:00 +0000</pubDate>
-  </item>
-  
-  <item>
-    <title>Hello, world!</title>
-    <link>https://shumphries.ca//blog/2021/01/27/hello-world.html</link>
-    <description>Hello, world. Welcome to my website.</description>
-    <pubDate>Wed, 27 Jan 2021 00:00:00 +0000</pubDate>
-  </item>
-  
 </rss>
