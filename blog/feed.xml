@@ -1,0 +1,26 @@
+---
+layout: none
+---
+
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>{{ site.title }}</title>
+    <link>{{ "/blog" | absolute_url }}</link>
+    <atom:link href="{{ "/blog/feed.xml" | absolute_url }}" rel="self" type="application/rss+xml"/>
+    <description></description>
+    <language>en-CA</language>
+    <copyright>Copyright &#169; {{ site.time | date: "%Y" }} {{ site.copyright }}</copyright>
+    <pubDate>{{ site.posts.first.date | date_to_rfc822 }}</pubDate>
+    <lastBuildDate>{{ site.posts.first.date | date_to_rfc822 }}</lastBuildDate>
+    <docs>https://www.rssboard.org/rss-specification</docs>
+    {% for post in site.posts %}
+    <item>
+        <title>{{ post.title }}</title>
+        <link>{{ post.url | absolute_url }}</link>
+        <guid>{{ post.url | absolute_url }}</guid>
+        <description>{{ post.excerpt | strip_html | strip }}</description>
+        <pubDate>{{ post.date | date_to_rfc822 }}</pubDate>
+    </item>
+    {% endfor %}
+  </channel>
+</rss>

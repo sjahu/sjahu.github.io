@@ -14,6 +14,7 @@ defaults:
 # Non-jekyll custom config variables
 copyright: Stephen Humphries
 title: Stephen's Site
+url: https://shumphries.ca
 
 exclude:
   - Gemfile
