@@ -16,6 +16,8 @@ copyright: Stephen Humphries
 title: Stephen's Site
 url: https://shumphries.ca
 
+timezone: America/Toronto
+
 exclude:
   - Gemfile
   - Gemfile.lock
