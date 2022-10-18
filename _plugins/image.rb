@@ -31,4 +31,4 @@ class ImageTag < Liquid::Tag
   end
 end
 
-Liquid::Template.register_tag('image', ImageTag)
+Liquid::Template.register_tag("image", ImageTag)
