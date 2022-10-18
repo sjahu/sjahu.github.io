@@ -41,7 +41,7 @@ body {
   width: 100%;
 }
 
-img {
+img, figure {
   display: block;
   max-width: 100%;
   margin-left: auto;
@@ -51,7 +51,7 @@ img {
   &.small { width: 400px; }
   &.medium { width: 600px; }
   &.large { width: 800px; }
-  &.huge { width: 1000px; }
+  &.huge { width: $max-width; }
 }
 
 pre {

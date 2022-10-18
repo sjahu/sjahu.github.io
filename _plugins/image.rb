@@ -1,33 +1,19 @@
 class ImageTag < Liquid::Tag
-  attr_reader :text, :src, :tokens
+  attr_reader :text, :src
   
   def initialize(_tag_name, text, _tokens)
     super
     @text = text
 
     @src = text.split.first
-    @tokens = text.split[1..]
   end
 
-  def render(context)
-    if css_class
-      "<img src=\"#{src}\" class=\"#{css_class}\">"
-    else
-      "<img src=\"#{src}\">"
-    end
+  def render(_context)
+    "<img src=\"#{src}\" #{"class=\"#{css_class}\"" if css_class}>"
   end
 
   def css_class
-    tokens = text.split
-    if tokens.include?("tiny")
-      "tiny"
-    elsif tokens.include?("small")
-      "small"
-    elsif tokens.include?("medium")
-      "medium"
-    elsif tokens.include?("large")
-      "medium"
-    end
+    text.split.intersection(["tiny", "small", "medium", "large", "huge"]).last
   end
 end
 
