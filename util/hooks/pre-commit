@@ -15,7 +15,7 @@ if [[ -n "$IMAGES" ]]; then
   echo "$IMAGES"
 
   echo $IMAGES | xargs exiftool -gps:all=
-  git add $IMAGES
+  echo $IMAGES | xargs git add
 
   echo "======================================="
 fi

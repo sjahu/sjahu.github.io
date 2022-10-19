@@ -161,7 +161,8 @@ body {
   max-width: 1024px;
   margin: auto;
   padding-left: 16px;
-  padding-right: 16px; }
+  padding-right: 16px;
+  text-align: justify; }
 
 #default-container {
   min-height: 100%;
@@ -182,21 +183,21 @@ body {
   text-align: center;
   width: 100%; }
 
-img {
+img, figure {
   display: block;
   max-width: 100%;
   margin-left: auto;
   margin-right: auto; }
-  img.tiny {
+  img.tiny, figure.tiny {
     width: 200px; }
-  img.small {
+  img.small, figure.small {
     width: 400px; }
-  img.medium {
+  img.medium, figure.medium {
     width: 600px; }
-  img.large {
+  img.large, figure.large {
     width: 800px; }
-  img.huge {
-    width: 1000px; }
+  img.huge, figure.huge {
+    width: 1024px; }
 
 pre {
   white-space: pre-wrap; }
