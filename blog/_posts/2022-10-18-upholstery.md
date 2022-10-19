@@ -105,7 +105,7 @@ In July 2021 I had some time off work, so I eyeballed the surface area of the co
 {% endfigure %}
 
 {% figure /assets/images/blog/2022-10-18/staples.jpg medium %}
-  The upholstery fabric is held to the frame by a lot of staples. 
+  The upholstery fabric is held to the frame by a lot of staples.
 {% endfigure %}
 
 {% figure /assets/images/blog/2022-10-18/frame.jpg medium %}
@@ -117,5 +117,5 @@ In July 2021 I had some time off work, so I eyeballed the surface area of the co
 {% endfigure %}
 
 {% figure /assets/images/blog/2022-10-18/beautiful_couch.jpg medium %}
-  Ta-da!👌
+  Ta-da!
 {% endfigure %}
