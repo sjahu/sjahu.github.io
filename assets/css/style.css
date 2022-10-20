@@ -289,8 +289,7 @@ hr {
   font-style: italic;
   font-style: "wght" 600; }
 /* Based on https://lea.verou.me/2012/04/background-attachment-local/ */
-.scroll-shadows,
-.highlight {
+.scroll-shadows, .highlight {
   --bgcolor: 255, 255, 255;
   --shadowcolor: 0, 0, 0;
   --shadowthickness: 10px;
@@ -302,4 +301,5 @@ hr {
   background-size: calc(var(--shadowthickness)*3) 100%, var(--shadowthickness) 100%, calc(var(--shadowthickness)*3) 100%, var(--shadowthickness) 100%, 100% calc(var(--shadowthickness)*3), 100% var(--shadowthickness), 100% calc(var(--shadowthickness)*3), 100% var(--shadowthickness);
   background-attachment: local, scroll, local, scroll, local, scroll, local, scroll;
   background-repeat: no-repeat;
-  background-color: var(--bgsolid); }
+  background-color: var(--bgsolid);
+  overscroll-behavior: none; }
