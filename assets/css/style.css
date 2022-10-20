@@ -288,3 +288,18 @@ hr {
   font-weight: bold;
   font-style: italic;
   font-style: "wght" 600; }
+/* Based on https://lea.verou.me/2012/04/background-attachment-local/ */
+.scroll-shadows,
+.highlight {
+  --bgcolor: 255, 255, 255;
+  --shadowcolor: 0, 0, 0;
+  --shadowthickness: 10px;
+  --bgsolid: rgb(var(--bgcolor));
+  --bgtrans: rgba(var(--bgcolor), 0);
+  --shadowsolid: rgba(var(--shadowcolor), 0.2);
+  --shadowtrans: rgba(var(--shadowcolor), 0);
+  background: linear-gradient(to right, var(--bgsolid) 30%, var(--bgtrans)) 0 0, radial-gradient(farthest-side at 0 50%, var(--shadowsolid), var(--shadowtrans)) 0 0, linear-gradient(to left, var(--bgsolid) 30%, var(--bgtrans)) 100% 0, radial-gradient(farthest-side at 100% 50%, var(--shadowsolid), var(--shadowtrans)) 100% 0, linear-gradient(to bottom, var(--bgsolid) 30%, var(--bgtrans)) 0 0, radial-gradient(farthest-side at 50% 0, var(--shadowsolid), var(--shadowtrans)) 0 0, linear-gradient(to top, var(--bgsolid) 30%, var(--bgtrans)) 0 100%, radial-gradient(farthest-side at 50% 100%, var(--shadowsolid), var(--shadowtrans)) 0 100%;
+  background-size: calc(var(--shadowthickness)*3) 100%, var(--shadowthickness) 100%, calc(var(--shadowthickness)*3) 100%, var(--shadowthickness) 100%, 100% calc(var(--shadowthickness)*3), 100% var(--shadowthickness), 100% calc(var(--shadowthickness)*3), 100% var(--shadowthickness);
+  background-attachment: local, scroll, local, scroll, local, scroll, local, scroll;
+  background-repeat: no-repeat;
+  background-color: var(--bgsolid); }
