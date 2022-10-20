@@ -16,6 +16,9 @@ copyright: Stephen Humphries
 title: Stephen's Site
 url: https://shumphries.ca
 
+source_url: https://github.com/sjahu/sjahu.github.io
+source_branch: main
+
 timezone: America/Toronto
 
 exclude:
