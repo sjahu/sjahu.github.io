@@ -12,6 +12,8 @@ module Jekyll
             formatter,
             {
               :css_class    => "highlight",
+              :gutter_class => "rouge-gutter",
+              :code_class => @highlight_options[:wrap] ? "rouge-code-wrap" : "rouge-code",
             }
           )
         end
