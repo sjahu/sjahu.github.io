@@ -221,8 +221,8 @@ a:hover {
 a:active {
   color: red; }
 
-#rss {
-  text-align: center;
+.rss-link {
+  text-align: right;
   font-size: smaller; }
 
 footer div {
