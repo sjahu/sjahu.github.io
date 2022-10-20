@@ -70,7 +70,7 @@ After some staring and squinting, I derived the following specification for the 
 
 ### Signal specification
 
-<div style="max-width: 100%; overflow-x: auto;"><pre style="white-space: pre;"><code>
+```
                                                                               Protocol identifier
                                                                              /        Command
                                                                             /        /    Unused
@@ -126,7 +126,7 @@ Set schedule     12:00 am  ---       12:30 am  {0xF316, 0x9C40}      01101000 11
 Set schedule     12:00 am  ---       12:45 am  {0xF316, 0x5CC0}      01101000 1100 11 11 00000000 00000000 00000011 00111010
 Set schedule     12:00 am  ---       01:00 am  {0xF316, 0xDC20}      01101000 1100 11 11 00000000 00000000 00000100 00111011
 Set schedule     12:00 am  ---       11:45 pm  {0xF316, 0x69FA}      01101000 1100 11 11 00000000 00000000 01011111 10010110
-</code></pre></div>
+```
 
 #### Checksum
 
