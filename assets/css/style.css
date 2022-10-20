@@ -262,7 +262,8 @@ hr {
       margin: 0; }
 
 .source-edit-history {
-  text-align: right; }
+  text-align: right;
+  font-size: smaller; }
 
 @font-face {
   font-family: "EB Garamond";
