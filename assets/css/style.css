@@ -2,18 +2,22 @@
   border-collapse: collapse; }
   .rouge-line-table tr > td {
     padding: 0 5px; }
-  .rouge-line-table .rouge-gutter, .rouge-line-table .rouge-code {
+  .rouge-line-table .rouge-gutter, .rouge-line-table .rouge-code, .rouge-line-table .rouge-code-wrap {
     vertical-align: top; }
-    .rouge-line-table .rouge-gutter pre, .rouge-line-table .rouge-code pre {
+    .rouge-line-table .rouge-gutter pre, .rouge-line-table .rouge-code pre, .rouge-line-table .rouge-code-wrap pre {
       margin: 0; }
   .rouge-line-table .rouge-gutter {
     text-align: right;
     opacity: 20%; }
-  .rouge-line-table .rouge-code {
+  .rouge-line-table .rouge-code, .rouge-line-table .rouge-code-wrap {
     word-break: break-all; }
+  .rouge-line-table .rouge-code-wrap pre {
+    white-space: pre-wrap; }
 
-figure.highlight {
-  margin: 0; }
+.highlight {
+  margin: 0;
+  max-width: 100%;
+  overflow-x: auto; }
 
 /* Copied from https://github.com/jekyll/minima/blob/master/_sass/minima/skins/classic.scss */
 .highlight .c {
@@ -201,9 +205,6 @@ img, figure {
   img.huge, figure.huge {
     width: 1024px; }
 
-pre {
-  white-space: pre-wrap; }
-
 code.language-plaintext {
   padding-left: 2px;
   padding-right: 2px;
@@ -223,6 +224,17 @@ a:active {
 #rss {
   text-align: center;
   font-size: smaller; }
+
+footer div {
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis; }
+
+hr {
+  border: none;
+  height: 1px;
+  background: #AAA; }
 
 .post-title {
   margin-bottom: 0px; }
