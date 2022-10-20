@@ -12,6 +12,8 @@
   .rouge-line-table .rouge-code, .rouge-line-table .rouge-code-wrap {
     word-break: break-all; }
   .rouge-line-table .rouge-code-wrap pre {
+    white-space: pre; }
+  .rouge-line-table .rouge-code-wrap pre {
     white-space: pre-wrap; }
 
 .highlight {
