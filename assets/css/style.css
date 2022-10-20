@@ -167,7 +167,8 @@ body {
   max-width: 1024px;
   margin: auto;
   padding-left: 16px;
-  padding-right: 16px; }
+  padding-right: 16px;
+  -webkit-text-size-adjust: 100%; }
 
 p {
   text-align: justify; }
