@@ -191,8 +191,6 @@ void configureHomeSpan() {
   homeSpan.setStatusPin(STATUS_LED_PIN);
   homeSpan.setStatusAutoOff(STATUS_AUTO_OFF);
   
-  homeSpan.setControlPin(RESET_BUTTON_PIN);
-  
   homeSpan.enableWebLog(WEBLOG_ENTRIES,"pool.ntp.org","UTC","log");
   homeSpan.setLogLevel(LOG_LEVEL);
 
