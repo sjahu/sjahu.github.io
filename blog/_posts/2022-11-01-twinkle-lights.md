@@ -1,5 +1,5 @@
 ---
-title: 
+title: Twinkle lights
 ---
 
 If you've read any of my recent posts, you'll probably have gathered that I find single-purpose remote controls annoying. It won't be a surprise, then, that when a string of twinkle lights controlled by an infrared remote ([basically these](https://www.amazon.ca/Mintlemon-Lighting-Dimmable-Backdrop-Tapestry/dp/B07W4H33V7/)) stopped turning on, I wasn't all that upset.
