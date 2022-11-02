@@ -46,7 +46,7 @@
 
 <p><img src="/assets/images/blog/2022-11-01/led.jpg" class="tiny" /></p>
 
-<p>The twinkle lights consisted of 100 LEDs wired in parallel between two thin enamelled wires, the wires connected at one end to the 5V infrared-receiving controller. In some two-wire light strips, each LED is controlled by a tiny chip containing a unique identifier. This light string is less complicated: the polarity of every other LED is reversed, so only half the string lights up at a time depending on which direction direction current is applied in. To produce the illusion of lighting up the entire string at once, you just have to switch back and forth really fast.</p>
+<p>The twinkle lights consisted of 100 LEDs wired in parallel between two thin enamelled wires, the wires connected at one end to the 5V infrared-receiving controller. In some two-wire light strips, each LED is controlled by a tiny chip containing a unique identifier, but this light string is less complicated.There’s nothing special about the LEDs, but the polarity of every other one is reversed, so only half the string lights up at a time depending on which direction direction current is applied in. This enables some basic alternating patterns; to produce the illusion of lighting up the entire string at once, you just have to switch back and forth really fast.</p>
 
 <p>According to the <a href="https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf">datasheet</a>, the ESP32’s GPIO pins are rated for 40 mA source and 28 mA sink current. I found that at 3.3 V and with a 33 Ω resistor in series, the LED string drew 21 mA, safely within the acceptable range.</p>
 
