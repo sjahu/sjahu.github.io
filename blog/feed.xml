@@ -6,9 +6,17 @@
     <description></description>
     <language>en-CA</language>
     <copyright>Copyright &#169; 2022 Stephen Humphries</copyright>
-    <pubDate>Tue, 18 Oct 2022 00:00:00 -0400</pubDate>
-    <lastBuildDate>Tue, 18 Oct 2022 00:00:00 -0400</lastBuildDate>
+    <pubDate>Tue, 01 Nov 2022 00:00:00 -0400</pubDate>
+    <lastBuildDate>Tue, 01 Nov 2022 00:00:00 -0400</lastBuildDate>
     <docs>https://www.rssboard.org/rss-specification</docs>
+    
+    <item>
+        <title>Twinkle Lights</title>
+        <link>https://shumphries.ca/blog/2022/11/01/twinkle-lights.html</link>
+        <guid>https://shumphries.ca/blog/2022/11/01/twinkle-lights.html</guid>
+        <description>If you’ve read any of my recent posts, you’ll probably have gathered that I find single-purpose remote controls annoying. It won’t be a surprise, then, that when a string of twinkle lights controlled by an infrared remote (basically these) stopped turning on, I wasn’t all that upset.</description>
+        <pubDate>Tue, 01 Nov 2022 00:00:00 -0400</pubDate>
+    </item>
     
     <item>
         <title>Vastly underestimating the work involved in furniture re-upholstery</title>
