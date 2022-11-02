@@ -20,7 +20,7 @@ Since I had ESP32 dev boards and recent experience with HomeKit left over from m
 
 {% image /assets/images/blog/2022-11-01/led.jpg tiny %}
 
-The light string consists of 100 LEDs wired in parallel between two thin enamelled wires. In some two-wire light strips, each LED is controlled by a tiny addressable chip, but this light string is less complicated and probably much cheaper. There's nothing special about the LEDs, but the polarity of every other one is reversed, so only half the string lights up at a time depending on which direction direction current is applied in. This enables some basic alternating patterns; to produce the illusion of lighting up the entire string at once, you just have to switch back and forth really fast.
+The light string consists of 100 LEDs wired in parallel between two thin enamelled wires (originally attached at L1 and L2 on the stock controller pictured above). In some two-wire light strips, each LED is controlled by a tiny addressable chip, but this light string is less complicated and probably much cheaper. There's nothing special about the LEDs, but the polarity of every other one is reversed, so only half the string lights up at a time depending on which direction direction current is applied in. This enables some basic alternating patterns; to produce the illusion of lighting up the entire string at once, you just have to switch back and forth really fast.
 
 According to the [datasheet](https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf), the ESP32's GPIO pins are rated for 40 mA source and 28 mA sink current. I found that at 3.3 V and with a 33 Ω resistor in series, the LED string drew 21 mA, safely within the acceptable range.
 
