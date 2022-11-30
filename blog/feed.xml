@@ -6,9 +6,17 @@
     <description></description>
     <language>en-CA</language>
     <copyright>Copyright &#169; 2022 Stephen Humphries</copyright>
-    <pubDate>Tue, 01 Nov 2022 00:00:00 -0400</pubDate>
-    <lastBuildDate>Tue, 01 Nov 2022 00:00:00 -0400</lastBuildDate>
+    <pubDate>Tue, 29 Nov 2022 00:00:00 -0500</pubDate>
+    <lastBuildDate>Tue, 29 Nov 2022 00:00:00 -0500</lastBuildDate>
     <docs>https://www.rssboard.org/rss-specification</docs>
+    
+    <item>
+        <title>Regulating a watch that's too cheap to have serviced</title>
+        <link>https://shumphries.ca/blog/2022/11/29/watch-regulation.html</link>
+        <guid>https://shumphries.ca/blog/2022/11/29/watch-regulation.html</guid>
+        <description>My every-day wristwatch is a Seiko 5: a self-winding mechanical watch that’s water-resistant and has day and date complications, a see-through back so you can appreciate the coolness of its mechanical movement, and the distinct feature of being extremely cheap– when I got it five years ago, I paid about $90 CAD. Although mechanical watches are much cooler than quartz crystal watches, they’re also far less accurate and from time to time they need to have their timing calibrated.</description>
+        <pubDate>Tue, 29 Nov 2022 00:00:00 -0500</pubDate>
+    </item>
     
     <item>
         <title>Twinkle lights</title>
