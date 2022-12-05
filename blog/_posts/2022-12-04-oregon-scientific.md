@@ -9,7 +9,7 @@ I have a digital clock, made by Oregon Scientific, that displays temperature and
 <a href="https://archive.org/details/generalmanual_000074498">BAR608HGA and THGR122NX manual, c. 2004 (PDF)</a>
 {% endfigure %}
 
-Years ago, the specific sensor model compatible with my base station was easy to buy and not too expensive. Now, though, it's hard to find at a price justifiable for such an old clock, if at all. When I bought the last replacement in 2018, it cost $55 on Amazon (I could buy a whole new weather station for about that price, but what a waste) but at least it was available; today, I can only find one eBay listing for a well-used, untested, $95 sensor, and [this neat British shop](https://weatherspares.co.uk/collections/oregon-scientific-sensors-options), which at time of writing lists a couple compatible *new* sensors as "back soon". Even if they were in stock, once shipping to Canada and duties were factored in, a replacement sensor would cost over $100.
+Years ago, the specific sensor model compatible with my base station was easy to buy and not too expensive. Now, though, it's hard to find at a price justifiable for such an old clock, if at all. When I bought the last replacement in 2018, it cost $55 on Amazon (I could buy a whole new weather station for about that price, but what a waste). At least it was available. Today, I can only find one eBay listing for a well-used, untested, $95 sensor, and [this neat British shop](https://weatherspares.co.uk/collections/oregon-scientific-sensors-options), which at time of writing lists a couple compatible *new* sensors as "back soon". Even if they were in stock, once shipping to Canada and duties were factored in, a replacement sensor would cost over $100.
 
 Thus, before the sensor I have stops working, I wanted to characterize the signal it transmits and figure out how to reproduce it. I thought it would be *far* easier to do so while I still had a reference sensor to compare to.
 
@@ -48,17 +48,17 @@ Bits are transmitted at 1024 Hz using normal-mode Manchester coding on a 433.92 
 <a href="https://en.wikipedia.org/wiki/Manchester_code#/media/File:Manchester_encoding_both_conventions.svg">Wikipedia</a>
 {% endfigure %}
 
-For protocol v2.1, each bit is sent twice, but inverted the first time. So, for example, the bit sequence `1011` is actually transmitted as `01100101`, which, in Manchester coding, becomes `off-on-on-off-on-off-off-on-off-on-on-off-off-on-on-off`, with each on or off state held for (1/1024)/2 seconds. The entire sequence is then repeated, after a short delay of 10.9 ms according to the PDF, or about 55 ms based on my observations. Since we both apparently used THGR122NX sensors, we can probably conclude that the specific length of the delay doesn't matter.
+For protocol v2.1, each bit is sent twice, but inverted the first time. So, for example, the bit sequence `1011` is actually transmitted as `01100101`, which, in Manchester coding, becomes `off-on-on-off-on-off-off-on-off-on-on-off-off-on-on-off`, with each `on` or `off` state held for (1/1024)/2 seconds. The entire sequence is then repeated, after a short delay of 10.9 ms according to the PDF, or about 55 ms based on my observations. Since we both apparently used THGR122NX sensors, we can probably conclude that the specific length of the delay doesn't matter.
 
-As you can see from the example above, in this scheme, a transmission is composed of intervals where the signal is either on or off for either a long or short time (depending on whether adjacent half-cycles are the same state). In the PDF, the author describes a sensor which always cuts short the on pulses by a consistent amount. My sensor didn't exhibit the same behaviour: rather, the duration of individual on and off pulses varied wildly, but the *average* clock rate was still almost precisely 1024 Hz.
+As you can see from the example above, in this scheme, a transmission is composed of intervals where the signal is either `on` or `off` for either a long or short time (depending on whether adjacent half-cycles are the same state). In the PDF, the author describes a sensor which always cuts short the `on` pulses by a consistent amount. My sensor didn't exhibit the same behaviour: rather, the duration of individual `on` and `off` pulses varied wildly, but the *average* clock rate was still almost precisely 1024 Hz.
 
-The Oregon Scientific receiver is very picky about the clock rate of the signal; any more than a few microseconds off per cycle and it'll ignore the transmission. I found that if I used Arduino's `delayMicroseconds` function to pause for 488 μs between state changes, the resulting RF pulses were actually too long for the receiver. Thus, the nominal delay should be callibrated depending on the hardware generating the signal so that the real signal is clocked as closely as possible to 1024 Hz (976.5 μs per cycle). This is mentioned by readers in the comments on [this blog post](http://www.connectingstuff.net/blog/encodage-protocoles-oregon-scientific-sur-arduino/), in which the author, Olivier Lebrun, described a simulated v2.1 sensor that could be picked up by an aftermarket base station; as the commenters there and my experience can attest, the original base stations are pickier about timing.
+The Oregon Scientific receiver is very picky about the clock rate of the signal; any more than a few microseconds off per cycle and it'll ignore the transmission. I found that if I used Arduino's `delayMicroseconds` function to pause for 488 μs between state changes, the resulting RF pulses were actually too long for the receiver. Thus, the nominal delay must be callibrated depending on the hardware generating the signal so that the real signal is clocked as closely as possible to 1024 Hz (976.5 μs per cycle). This is mentioned by readers in the comments on [this blog post](http://www.connectingstuff.net/blog/encodage-protocoles-oregon-scientific-sur-arduino/), in which the author, Olivier Lebrun, described a simulated v2.1 sensor that could be picked up by an aftermarket base station; as the commenters there and my experience can attest, the original base stations are pickier about timing.
 
 ## Data format
 
 V2.1 protocol data frames vary in length between sensor models. There are more details on other sensors in the osengr PDF; here's the format of the data transmitted by my THGR122NX sensor.
 
-Each frame is 96 bits long, divided into 24 nibbles. The nibbles are transmitted in order, with each one transmitted least-significant-bit-first; e.g. the nibble `0x8` (`1000` in binary) would be transmitted as `0`, `0`, `0`, `1` with respect to time.
+Each frame is 96 bits long, divided into 24 nibbles. The nibbles are transmitted in order, with each one transmitted least-significant-bit-first; e.g. the nibble `0x8` (`1000` in binary) would be transmitted as `0`, `0`, `0`, `1`.
 
 - `0-3`: The first four nibbles are a pre-amble consisting of 16 `1` bits. Recall that each bit is transmitted twice, inverted first, so really this results in a transmission of `01010101010101010101010101010101`. This is used to alert the receiver that a message is incoming and to give its automatic gain control circuit a chance to callibrate itself to the signal strength. In theory, it also allows a receiver to recover the clock rate of the signal, but the Oregon Scientific base station doesn't do that.
 - `4`: The sync nibble (`0xa`) identifies where the pre-amble ends and where the message payload begins.
@@ -69,7 +69,7 @@ Each frame is 96 bits long, divided into 24 nibbles. The nibbles are transmitted
 - `13-16`: The temperature in degrees Celcius, represented in binary-coded-decimal with the 0.1s first, then the ones, then the tens, then the hundreds. The largest bit of the fourth nibble represents the sign (`0x0` for positive and `0x8` for negative).
 - `17-18`: The relative humidity, with ones transmitted in the first nibble and tens in the second.
 - `19`: Always `0x8`, meaning unknown.
-- `20-21`: A checksum calculated by adding together all the nibbles from 5 to 19, inclusive. Any time overflow occurs during this summation (i.e. the sum is greater than 255 or what fits in 1 byte), it's added back into the result. Transmitted in LSB-first order.
+- `20-21`: A checksum calculated by adding together all the nibbles from `5-19`, inclusive. Any time overflow occurs during this summation (i.e. the sum is greater than 255 or what fits in 1 byte), it's added back into the result. Transmitted in LSB-first order.
 - `22-23`: A second checksum, calculated by the CRC-8-CCITT algorithm described in the PDF, but with an initial value of `0x42` and considering only nibbles `5-9` and `12-19`. Transmitted in LSB-first order.
 
 ### CRC
@@ -82,9 +82,9 @@ In Olivier's blog post, he didn't address the CRC byte; transmitting two zero ni
 
 The initial value is just the value stored in the result register before any of the message bits have been fed into the algorithm. Knowing that there must be some way to deterministically calculate the CRC without having any advance knowledge about the specific sensor sending the message, I reset my sensor a bunch of times and recorded the subsequent transmissions to see if I could figure out the pattern. Since there are only 255 possible values for the IV, it's trivial to determine it by brute force for any given transmission, based on the actual CRC. As expected, the IV did appear to be consistent between transmissions but change with each sensor reset, along with the rolling ID.
 
-The key insight into figuring out how the CRC worked came when I noticed that even when the rolling ID changed, as long as the other data in the transmission remained constant, the CRC didn't change. That could only mean that however the sensor was calculating the CRC, the rolling ID was not involved.  
+The key insight into figuring out how the CRC worked came when I noticed that even when the rolling ID changed, as long as the other data in the transmission remained constant, the CRC didn't change. That could only mean that however the sensor was calculating the CRC, the rolling ID was not involved.
 
-By calculating the CRC using nibbles 5 to 19, inclusive, **but excluding the rolling ID nibbles**, I found that the initial value could be assumed to be a constant, `0x42`. Perhaps there is an even simpler explanation than that, but since this seems to work even when varying the rolling ID and changing the channel number, I'll take it.
+By calculating the CRC using nibbles 5 to 19, inclusive, **but excluding the rolling ID nibbles**, I found that the initial value could be assumed to be a constant, `0x42`. Perhaps there is an even simpler explanation than that, but, since this seems to work even when varying the rolling ID and changing the channel number, I'll take it.
 
 # Prototype
 
@@ -96,7 +96,7 @@ Left to right: USB logic analyzer, 433.92 MHz receiver, 433.92 MHz transmitter, 
 1337 proof of successfully receiving an arbitrary transmission.
 {% endfigure %}
 
-# Next steps
+# What's next?
 
 The prototype proves that it works; my next step is to build a more practical sensor based on an ATTiny85 microcontroller, which will be much cheaper than a full-size Arduino board, use far less power, and fit in a tiny plastic case. I'll link it here when it's done.
 
@@ -108,14 +108,14 @@ The prototype proves that it works; my next step is to build a more practical se
 /*
  * Arduino-based temperature/humidity sensor compatible with the Oregon Scientific v2.1
  * 433.92 MHz weather sensor protocol.
- * 
+ *
  * This sketch replicates the behaviour of the Oregon Scientific THGR122NX sensor.
- * 
- * More info here: https://shumphries.ca/blog/2022/12/04/oregon-scientific/
- * 
+ *
+ * More info here: https://shumphries.ca/blog/2022/12/04/oregon-scientific
+ *
  * LICENCE: Licensed under the "do whatever you want" open-source licence, but please include
  *          this comment as attribution.
- *          
+ *
  * Copyright © 2022 Stephen Humphries
  */
 
@@ -156,7 +156,7 @@ The prototype proves that it works; my next step is to build a more practical se
 
 uint8_t data[] = { // Data frame, initialized with the parts that never change
   0xff,            // Preamble
-  0xff, 
+  0xff,
   0x1a,            // Sync nibble and sensor ID
   0x2d,
   0x00,
@@ -189,11 +189,11 @@ void loop() {
   uint8_t t_ones = ((int)(t * (t_sign ? -10 : 10)) / 10) % 10;
   uint8_t t_tens = ((int)(t * (t_sign ? -10 : 10)) / 100) % 10;
   uint8_t t_huns = ((int)(t * (t_sign ? -10 : 10)) / 1000) % 10;
-  
+
   float h = dht.readHumidity() + 0.5; // Round to the nearest one by adding 0.5 then truncating the decimal
   uint8_t h_ones = ((int)(h * 10) / 10) % 10;
-  uint8_t h_tens = ((int)(h * 10) / 100) % 10;  
-  
+  uint8_t h_tens = ((int)(h * 10) / 100) % 10;
+
   // data[6] &= 0xf8; data[6] |= (lowBattery() ? 0x4 : 0x0); // Not implemented
 
   data[6] &= 0x0f; data[6] |= ((t_deci << 4) & 0xf0);
@@ -204,7 +204,7 @@ void loop() {
 
   data[8] &= 0x0f; data[8] |= ((h_ones << 4) & 0xf0);
   data[9] &= 0xf0; data[9] |= ((h_tens << 0) & 0x0f);
-  
+
   data[10] &= 0x00; data[10] |= (checksumSimple(data, SUM_MASK) & 0xff);
   data[11] &= 0x00; data[11] |= (checksumCRC(data, CRC_MASK, CRC_IV) & 0xff);
 
@@ -226,7 +226,7 @@ void sendData(uint8_t data[], int len) {
   sei(); // Re-enable interrupts
 }
 
-void sendBit(bool val) {  
+void sendBit(bool val) {
   if (val) {
     sendLowHigh();
     sendHighLow(); // Doing it this way keeps the timing consistent, though
