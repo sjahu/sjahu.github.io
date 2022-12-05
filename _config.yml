@@ -11,6 +11,8 @@ defaults:
     values:
       layout: post
 
+permalink: pretty
+
 # Non-jekyll custom config variables
 copyright: Stephen Humphries
 title: Stephen's Site
