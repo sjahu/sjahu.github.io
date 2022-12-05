@@ -12,64 +12,64 @@
     
     <item>
         <title>Simulating an Oregon Scientific v2.1 remote temperature sensor</title>
-        <link>https://shumphries.ca/blog/2022/12/04/oregon-scientific.html</link>
-        <guid>https://shumphries.ca/blog/2022/12/04/oregon-scientific.html</guid>
+        <link>https://shumphries.ca/blog/2022/12/04/oregon-scientific/</link>
+        <guid>https://shumphries.ca/blog/2022/12/04/oregon-scientific/</guid>
         <description>I have a digital clock, made by Oregon Scientific, that displays temperature and humidity readings transmitted to it by a sensor that lives outside. The receiver has held up well over the 17 or 18 years I’ve had it, but I’ve had to replace the remote sensor, constantly exposed to the elements as it is, several times.</description>
         <pubDate>Sun, 04 Dec 2022 00:00:00 -0500</pubDate>
     </item>
     
     <item>
         <title>Regulating a watch that's too cheap to have serviced</title>
-        <link>https://shumphries.ca/blog/2022/11/29/watch-regulation.html</link>
-        <guid>https://shumphries.ca/blog/2022/11/29/watch-regulation.html</guid>
+        <link>https://shumphries.ca/blog/2022/11/29/watch-regulation/</link>
+        <guid>https://shumphries.ca/blog/2022/11/29/watch-regulation/</guid>
         <description>My every-day wristwatch is a Seiko 5: a self-winding mechanical watch that’s water-resistant and has day and date complications, a see-through back so you can appreciate the coolness of its mechanical movement, and the distinct feature of being extremely cheap– when I got it five years ago, I paid about $90 CAD. Although mechanical watches are much cooler than quartz crystal watches, they’re also far less accurate and from time to time they need to have their timing calibrated.</description>
         <pubDate>Tue, 29 Nov 2022 00:00:00 -0500</pubDate>
     </item>
     
     <item>
         <title>Twinkle lights</title>
-        <link>https://shumphries.ca/blog/2022/11/01/twinkle-lights.html</link>
-        <guid>https://shumphries.ca/blog/2022/11/01/twinkle-lights.html</guid>
+        <link>https://shumphries.ca/blog/2022/11/01/twinkle-lights/</link>
+        <guid>https://shumphries.ca/blog/2022/11/01/twinkle-lights/</guid>
         <description>If you’ve read any of my recent posts, you’ll probably have gathered that I find single-purpose remote controls annoying. It won’t be a surprise, then, that when a string of twinkle lights controlled by an infrared remote (basically these) stopped turning on, I wasn’t all that upset.</description>
         <pubDate>Tue, 01 Nov 2022 00:00:00 -0400</pubDate>
     </item>
     
     <item>
         <title>Vastly underestimating the work involved in furniture re-upholstery</title>
-        <link>https://shumphries.ca/blog/2022/10/18/upholstery.html</link>
-        <guid>https://shumphries.ca/blog/2022/10/18/upholstery.html</guid>
+        <link>https://shumphries.ca/blog/2022/10/18/upholstery/</link>
+        <guid>https://shumphries.ca/blog/2022/10/18/upholstery/</guid>
         <description>This is basically a photo-dump of a project I’ve been meaning to post about for a while. In October 2020, I bought a used La-Z-Boy reclining loveseat for $75 off Kijiji. The couch was astonishingly ugly (what even were the ’90s??†), but it was a good deal and pretty comfortable. I covered it with a blanket and, later, with an approximately-fitting tie-on cover, but always had the idea of re-upholstering it properly in the back of my mind, since both covers looked pretty bad.</description>
         <pubDate>Tue, 18 Oct 2022 00:00:00 -0400</pubDate>
     </item>
     
     <item>
         <title>Smartening up my dumb vacuum</title>
-        <link>https://shumphries.ca/blog/2022/10/04/wifi-vacuum.html</link>
-        <guid>https://shumphries.ca/blog/2022/10/04/wifi-vacuum.html</guid>
+        <link>https://shumphries.ca/blog/2022/10/04/wifi-vacuum/</link>
+        <guid>https://shumphries.ca/blog/2022/10/04/wifi-vacuum/</guid>
         <description>For the last couple years, I’ve had a habit of vacuuming my apartment Thursday afternoons while listening to a weekly live-streamed all-hands meeting for work. Mid summer, this meeting was rescheduled to a monthly cadence, so, with my dedicated vacuuming time gone and my floor getting dusty, I bought a robot vacuum.</description>
         <pubDate>Tue, 04 Oct 2022 00:00:00 -0400</pubDate>
     </item>
     
     <item>
         <title>Rigging up an automatic On-Air light for my work computer</title>
-        <link>https://shumphries.ca/blog/2022/04/24/on-air-light.html</link>
-        <guid>https://shumphries.ca/blog/2022/04/24/on-air-light.html</guid>
+        <link>https://shumphries.ca/blog/2022/04/24/on-air-light/</link>
+        <guid>https://shumphries.ca/blog/2022/04/24/on-air-light/</guid>
         <description>Nobody wants to be interrupted in a work meeting or, worse, inadvertently star in the background of a partner or roommate’s video call, so I imagine that other working-from-home people have also devised complex systems of hand/face/phone/eyebrow signals to silently communicate microphone and camera statuses at a distance. That’s stone age tech, though; the broadcasting industry solved this problem decades ago by installing bright red “On Air” lights outside studio doors that indicate when a studio is in use.</description>
         <pubDate>Sun, 24 Apr 2022 00:00:00 -0400</pubDate>
     </item>
     
     <item>
         <title>Forwarding HDMI CEC volume control messages to my TV</title>
-        <link>https://shumphries.ca/blog/2022/04/06/hdmi-cec-volume-control.html</link>
-        <guid>https://shumphries.ca/blog/2022/04/06/hdmi-cec-volume-control.html</guid>
+        <link>https://shumphries.ca/blog/2022/04/06/hdmi-cec-volume-control/</link>
+        <guid>https://shumphries.ca/blog/2022/04/06/hdmi-cec-volume-control/</guid>
         <description>In a recent article shared on Hacker News, the author detailed his attempt at creating the smallest and worst HDMI display by abusing the i2c bus that powers the Display Data Channel protocol. The comments prompted me to read up on another constituent protocol of HDMI that I had, up to that point, taken for granted: Consumer Electronics Control (CEC).</description>
         <pubDate>Wed, 06 Apr 2022 00:00:00 -0400</pubDate>
     </item>
     
     <item>
         <title>Hello, world!</title>
-        <link>https://shumphries.ca/blog/2021/01/27/hello-world.html</link>
-        <guid>https://shumphries.ca/blog/2021/01/27/hello-world.html</guid>
+        <link>https://shumphries.ca/blog/2021/01/27/hello-world/</link>
+        <guid>https://shumphries.ca/blog/2021/01/27/hello-world/</guid>
         <description>Hello, world. Welcome to my website.</description>
         <pubDate>Wed, 27 Jan 2021 00:00:00 -0500</pubDate>
     </item>
