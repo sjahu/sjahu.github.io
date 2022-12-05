@@ -239,6 +239,11 @@ hr {
   height: 1px;
   background: #AAA; }
 
+blockquote {
+  margin-left: 0;
+  padding-left: 15px;
+  border-left: 5px solid lightblue; }
+
 .post-title {
   margin-bottom: 0px; }
 
