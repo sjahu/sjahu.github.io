@@ -116,7 +116,7 @@
 
 <p>The key insight into figuring out how the CRC worked came when I noticed that even when the rolling ID changed, as long as the other data in the transmission remained constant, the CRC didn’t change. That could only mean that however the sensor was calculating the CRC, the rolling ID was not involved.</p>
 
-<p>By calculating the CRC using nibbles 5 to 19, inclusive, <strong>but excluding the rolling ID nibbles</strong>, I found that the initial value could be assumed to be a constant, <code class="language-plaintext highlighter-rouge">0x42</code>. Perhaps there is an even simpler explanation than that, but since this seems to work even when varying the rolling ID and changing the channel number, I’ll take it.</p>
+<p>By calculating the CRC using nibbles 5 to 19, inclusive, <strong>but excluding the rolling ID nibbles</strong>, I found that the initial value could be assumed to be a constant, <code class="language-plaintext highlighter-rouge">0x42</code>. Perhaps there is an even simpler explanation than that, but, since this seems to work even when varying the rolling ID and changing the channel number, I’ll take it.</p>
 
 <h1 id="prototype">Prototype</h1>
 
