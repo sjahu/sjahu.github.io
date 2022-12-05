@@ -11,7 +11,7 @@ defaults:
     values:
       layout: post
 
-permalink: pretty
+permalink: /:categories/:year/:month/:day/:title
 
 # Non-jekyll custom config variables
 copyright: Stephen Humphries
