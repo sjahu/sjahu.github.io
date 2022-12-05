@@ -82,7 +82,7 @@ In Olivier's blog post, he didn't address the CRC byte; transmitting two zero ni
 
 The initial value is just the value stored in the result register before any of the message bits have been fed into the algorithm. Knowing that there must be some way to deterministically calculate the CRC without having any advance knowledge about the specific sensor sending the message, I reset my sensor a bunch of times and recorded the subsequent transmissions to see if I could figure out the pattern. Since there are only 255 possible values for the IV, it's trivial to determine it by brute force for any given transmission, based on the actual CRC. As expected, the IV did appear to be consistent between transmissions but change with each sensor reset, along with the rolling ID.
 
-The key insight into figuring out how the CRC worked came when I noticed that even when the rolling ID changed, as long as the other data in the transmission remained constant, the CRC didn't change. That could only mean that however the sensor was calculating the CRC, the rolling ID was not involved.
+The key insight in figuring out how the CRC worked came when I noticed that even when the rolling ID changed, as long as the other data in the transmission remained constant, the CRC stayed the same. That could only mean that however the sensor was calculating the CRC, the rolling ID was not involved.
 
 By calculating the CRC using nibbles 5 to 19, inclusive, **but excluding the rolling ID nibbles**, I found that the initial value could be assumed to be a constant, `0x42`. Perhaps there is an even simpler explanation than that, but, since this seems to work even when varying the rolling ID and changing the channel number, I'll take it.
 
@@ -123,7 +123,7 @@ The prototype proves that it works; my next step is to build a more practical se
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
