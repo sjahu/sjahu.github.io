@@ -13,7 +13,7 @@ I had two problems with these lights:
 1. I hate remotes.
 2. The controller had no persistent storage, so the power and mode states reset every time the light string was unplugged. This was unsurprising and even perfectly reasonable, but it meant that I couldn't replace the remote with a simple analog lamp timer.
 
-Since I had ESP32 dev boards and recent experience with HomeKit left over from my [last project](2022-10-04-wifi-vacuum.md), it was easy enough to replace the broken LED controller, trading infrared control for Wi-Fi and Siri/Home app support.
+Since I had ESP32 dev boards and recent experience with HomeKit left over from my [last project](/blog/2022/10/04/wifi-vacuum), it was easy enough to replace the broken LED controller, trading infrared control for Wi-Fi and Siri/Home app support.
 
 {% image /assets/images/blog/2022-11-01/usb_top.jpg tiny %}
 {% image /assets/images/blog/2022-11-01/usb_bottom.jpg tiny %}
