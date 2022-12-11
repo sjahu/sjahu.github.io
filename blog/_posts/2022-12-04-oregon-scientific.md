@@ -232,15 +232,15 @@ void loop() {
 
 
 void sendData(uint8_t data[], int len) {
-  cli(); // Disable interrupts to avoid any timing funny business
   for (int i = 0; i < 2; ++i) { // Send the message twice
+    cli(); // Disable interrupts to avoid any timing funny business
     for (int j = 0; j < len * 8; ++j) { // Bits are transmitted LSB-first
       sendBit((data[j / 8] >> (j % 8)) & 0x1);
     }
     digitalWrite(TX_PIN, LOW); // Don't leave the transmitter on!
+    sei(); // Re-enable interrupts
     delay(55); // Pause for a short time between transmissions
   }
-  sei(); // Re-enable interrupts
 }
 
 void sendBit(bool val) {
