@@ -98,7 +98,7 @@ Left to right: USB logic analyzer, 433.92 MHz receiver, 433.92 MHz transmitter, 
 
 # What's next?
 
-The prototype proves that it works; my next step is to build a more practical sensor based on an ATTiny85 microcontroller, which will be much cheaper than a full-size Arduino board, use far less power, and fit in a tiny plastic case. I'll link it here when it's done.
+The prototype proves that it works; my next step is to build a more practical sensor based on an ATTiny85 microcontroller, which will be much cheaper than a full-size Arduino board, use far less power, and fit in a tiny plastic case. I'll link it here when it's done. EDIT: [ATtiny85-based Oregon Scientific v2.1 remote temperature sensor](/blog/2023/01/03/oregon-scientific-attiny85)
 
 # The code
 
