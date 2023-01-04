@@ -31,7 +31,7 @@
 
 <ul>
   <li><a href="https://www.digikey.ca/en/products/detail/microchip-technology/ATTINY85V-10PU/735471">ATTINY85V-10PU</a></li>
-  <li><a href="https://www.digikey.ca/en/products/detail/sparkfun-electronics/PRT-08808/7387401">1” × 1” perfboard</a></li>
+  <li><a href="https://www.digikey.ca/en/products/detail/sparkfun-electronics/PRT-08808/7387401">1″ × 1″ perfboard</a></li>
   <li><a href="https://www.aliexpress.com/item/32980820915.html">433 MHz transmitter</a></li>
   <li><a href="https://www.aliexpress.com/item/32523611214.html">DHT22 sensor</a></li>
   <li>2x <a href="https://www.amazon.ca/dp/B08DNF191P">100 nF capacitor</a></li>
@@ -42,9 +42,9 @@
 
 <h1 id="microcontroller">Microcontroller</h1>
 
-<p>The Arduino-on-breadboard form factor, while great for prototyping, is too expensive (25 USD for an <a href="https://store-usa.arduino.cc/products/arduino-leonardo-with-headers">Arduino Leonardo</a>), too large (2.7” × 2.1”), and too power-hungry (it draws ~20 mA at 3.3 V running an empty Arduino sketch at 16 MHz) to use for something as simple and portable as a temperature sensor.</p>
+<p>The Arduino-on-breadboard form factor, while great for prototyping, is too expensive (25 USD for an <a href="https://store-usa.arduino.cc/products/arduino-leonardo-with-headers">Arduino Leonardo</a>), too large (2.7″ × 2.1″ just for the board itself), and too power-hungry (it draws ~20 mA at 3.3 V running an empty Arduino sketch at 16 MHz) to use for something as simple and portable as a temperature sensor.</p>
 
-<p>I chose an ATtiny85 microcontroller as the brain for version 2 of my sensor since it’s compatible with the Arduino IDE but tiny (so accurately named!) and cheap. A 1” square perfboard provides a perfect platform for the 8 pin chip and the the few necessary peripherals.</p>
+<p>I chose an ATtiny85 microcontroller as the brain for version 2 of my sensor since it’s compatible with the Arduino IDE but tiny (so accurately named!) and cheap. A 1″ square perfboard provides a perfect platform for the 8 pin chip and the the few necessary peripherals.</p>
 
 <h1 id="programming-the-attiny85">Programming the ATtiny85</h1>
 
@@ -57,33 +57,33 @@
 
 <h1 id="power-consumption">Power consumption</h1>
 
-<p>Out of the box, an Arduino board running a naïvely written sketch can be impractical to run on battery power; assuming a capacity of 1200 mAh per AAA cell, a constant load of 20 mA (as quoted above for an empty sketch running on an Arduino Leonardo at 16 MHz and 3.3 V) would drain two cells in only about 5 days. Nick Gammon describes some ways to save power in microcontroller projects <a href="http://www.gammon.com.au/power">here</a>. Based on those tips, I made the following optimizations:</p>
+<p>Out of the box, an Arduino board running a naïvely written sketch can be impractical to run on battery power: assuming a capacity of 1200 mAh per AAA cell, a constant load of 20 mA (as quoted above for an empty sketch running on an Arduino Leonardo at 16 MHz and 3.3 V) would drain two cells in only about 5 days. Nick Gammon describes some ways to save power in microcontroller projects <a href="http://www.gammon.com.au/power">here</a>. Based on those tips, I chose to:</p>
 
 <ul>
   <li>lose the development board and just use the microcontroller on its own,</li>
   <li>disable the Analog to Digital converter when not in use,</li>
   <li>use as low a clock speed as possible,</li>
   <li>power off peripherals (sensor, radio, oscillator) when not in use, and</li>
-  <li>don’t busy-wait; use the microcontroller’s power-off sleep mode whenever possible.</li>
+  <li>rarely busy-wait; use the microcontroller’s power-off sleep mode whenever possible.</li>
 </ul>
 
-<p>I set the ATtiny to run at 8 MHz, instead of 16, which saves a significant amount of power when the CPU is running. The microcontroller’s internal oscillator can also run at 1 MHz, but that’s too slow to interface with the DHT22 sensor, at least with the library I was using.</p>
+<p>I configured the ATtiny to run at 8 MHz, instead of 16, which saves a significant amount of power when the CPU is running. The microcontroller’s internal oscillator can also run at 1 MHz, but that’s too slow to interface with the DHT22 sensor, at least with the library I was using.</p>
 
-<p>Powered on but not transmitting, the 433 MHz transmitter drew about 4.7 mA; transmitting, this jumped to 25.5 mA. The DHT22 drew about 170 µA at idle and a few mA when in use. The oscillator also drew a few µA when powered on. All of these would reduce battery life if they were powered on all the time, so I elected to switch them on only when necessary. Since each pin on the ATtiny can supply 40 mA, it’s fine to drive the peripherals directly.</p>
+<p>Powered on but not transmitting, the 433 MHz transmitter draws about 4.7 mA; transmitting, this jumps to 25.5 mA. The DHT22 draws about 170 µA at idle and a few mA when in use. The oscillator also draws a few µA when powered on. All of these would reduce battery life if they were powered on all the time, so I elected to switch them on only when necessary. Since each pin on the ATtiny can supply 40 mA, it’s fine to drive the peripherals directly.</p>
 
-<p>In power-off sleep with all the peripherals unpowered and the ADC disabled, I found that the ATtiny85 used about only about 4.4 µA at 3.3 V. This is basically a rounding error compared to the power usage when not sleeping: ~4 mA by the microcontroller itself when the processor is running for a fraction of a second, plus 25 mA for 0.2 seconds when transmitting (the signal takes about 0.2 seconds to send and we send it twice; given a 50% duty cycle that means the transmitter is powered for 0.2 seconds). Plugging those rough numbers into a calculation indicates that two AAAs should power the device for at least a year and a half.</p>
+<p>In power-off sleep with all the peripherals unpowered and the ADC disabled, I found that the ATtiny85 uses about only about 4.4 µA at 3.3 V. This is basically a rounding error compared to the power usage when not sleeping: ~4 mA by the microcontroller itself when the processor is running for a fraction of a second, plus 25 mA for 0.2 seconds when transmitting (the signal takes about 0.2 seconds to send and we send it twice; given a 50% duty cycle that means the transmitter is powered for 0.2 seconds). Plugging those rough numbers into a calculation indicates that two AAAs should power the device for at least a year and a half.</p>
 
 <h1 id="timing">Timing</h1>
 
-<p>I mentioned in my previous post that the Oregon Scientific base station is very picky about timing– if the timing of a transmission is off from 1024 Hz by more than about +/- 3 µs per cycle, the transmission will be ignored. That’s a tolerance of about 0.3%, which I achieved in the prototype by calibrating the delay used to generate the output signal based on the signal’s measured frequency. Unfortunately, the ATtiny85’s internal <a href="https://en.wikipedia.org/wiki/RC_oscillator">RC oscillator</a> is not particularly stable with respect to voltage or temperature, both of which will vary in this application as the battery wear and weather conditions change. According to the <a href="https://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-2586-AVR-8-bit-Microcontroller-ATtiny25-ATtiny45-ATtiny85_Datasheet.pdf">datasheet</a> (which was an invaluable resource at every step of this build), the frequency can vary by nearly 4%, which is an order of magnitute more what would be acceptable. When I tested this by putting my ATtiny-based v2 prototype, which worked at room temperature, in the freezer, the base station quickly stopped receiving transmissions and the recordings that I captured on my laptop confirmed that the signal’s frequency had dropped well out of spec.</p>
+<p>I mentioned in my previous post that the Oregon Scientific base station is very picky about timing– if the average clock cycle length of a transmission is off by more than ±3 µs from the nominal length of ~976.5 µs, the transmission will be ignored. That’s a tolerance of only about 0.3%, which I met in the prototype by calibrating the delay used to generate the output signal based on the signal’s measured frequency. Unfortunately, the ATtiny85’s internal <a href="https://en.wikipedia.org/wiki/RC_oscillator">RC oscillator</a> is not particularly stable with respect to voltage or temperature, both of which will vary in this application as the battery wear and weather conditions change. According to the <a href="https://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-2586-AVR-8-bit-Microcontroller-ATtiny25-ATtiny45-ATtiny85_Datasheet.pdf">datasheet</a> (which was an invaluable resource at every step of this build), the frequency can vary by nearly 4%, an order of magnitute more what would be acceptable. When I tested this by putting my ATtiny-based v2 prototype, which worked fine at room temperature, in the freezer, the base station quickly stopped receiving transmissions and the recordings that I captured on my laptop confirmed that the signal’s frequency had dropped well out of spec.</p>
 
 <p><img src="/assets/images/blog/2023-01-03/datasheet_oscillator_frequency.png" /></p>
 
-<p>I toyed with the idea of trying to model the expected internal oscillator frequency based on the instantaneous measured temperature and voltage, but it seemed very unlikely that the results would be precise enough to be worth the effort. The consensus on AVRFreaks.net when somebody else <a href="https://www.avrfreaks.net/s/topic/a5C3l000000UNwDEAW/t105811">considered doing something similar</a> was that, “unless your widget will be produced by ten of millions pieces a year”, “do not fuck your brain … connect a crystal to it”. Sage advice. Instead, I ordered a 32 768 Hz crystal oscillator, guaranteed to be accurate to ±20 ppm (parts per million) at room temperature and up to an additional 150 ppm off at the extremes of -40°C to 90°C. That’s an order of magnitude <em>better</em> than the receiver requires.</p>
+<p>I toyed with the idea of trying to model the expected internal oscillator frequency based on the instantaneous measured temperature and voltage, but it seemed very unlikely that the results would be precise enough to be worth the effort. The consensus on AVRFreaks.net when somebody else <a href="https://www.avrfreaks.net/s/topic/a5C3l000000UNwDEAW/t105811">considered doing something similar</a> was that, “unless your widget will be produced by ten of millions pieces a year”, “do not fuck your brain … connect a crystal to it”. Sage advice. Instead, I ordered a 32 768 Hz crystal oscillator, guaranteed to be accurate to ±20 ppm (parts per million) at room temperature and up to an additional 150 ppm off at the extremes of -40°C to 90°C. That’s an order of magnitude tighter than the receiver requires. 🙌</p>
 
-<p>The ATtiny85 supports clocking the entire device with an external oscillator or crystal. In this case, however, I didn’t care what frequency computations were performed at, which is why, instead of replacing the device clock source, I opted to use a crystal oscillator with a frequency divisible by 1024 Hz as the clock source only for Timer0, leaving the CPU to use the imprecise internal oscillator. I rewrote the signal generation code to use sleeps and interrupts (occurring every 16 ticks of the 32 768 Hz oscillator, i.e. at 2048 Hz) to generate the output signal. This resulted in an acceptable level of precision over the whole voltage and temperature range.</p>
+<p>The ATtiny85 supports clocking the entire device with an external oscillator or crystal. In this case, however, I didn’t care what frequency computations were performed at, which is why, instead of replacing the device clock source, I opted to use a crystal oscillator with a frequency divisible by 2 × 1 024 Hz as the clock source only for Timer0, leaving the CPU to use the imprecise internal oscillator. I rewrote the signal generation code to use sleeps and interrupts (occurring every 16 ticks of the 32 768 Hz oscillator, i.e. at 2 048 Hz) to generate the output signal. This resulted in an acceptable level of precision over the whole voltage and temperature range.</p>
 
-<p>Aside: <em>why 32 768 Hz?</em>, you might ask. Well, 32 768 is divisible by 2048, so it’s a suitable frequency for this particular task. Secondarily, 32 768 Hz crystal oscillators are extremely abundant and cheap because they’re commonly used in real-time clock applications (like almost all digital watches)– you can measure exactly 1 second using a 32 768 Hz oscillator and a 15-bit binary counter.</p>
+<p>Aside: <em>why 32 768 Hz?</em>, you might ask. Well, 32 768 is divisible by 2 048, so it’s a suitable frequency for this particular task, which requires a 1 024 Hz output signal. Secondarily, 32 768 Hz crystal oscillators are extremely abundant and cheap because they’re commonly used in real-time clock applications (like almost all digital watches)– you can measure exactly 1 second using a 32 768 Hz oscillator and a 15-bit binary counter.</p>
 
 <p>The watch crystal worked well, but I misread the datasheet when ordering it and was unpleasantly surprised to find that it was only 2 mm² in area. This crumb-sized component proved very difficult to solder onto my perfboard; I ended up having to place it at an angle to get three of the pins touching solder pads, then use a glob of solder between the fourth pad and metal lid to establish the ground connection. If I ever build another one of these, I’ll design a real PCB with properly spaced pads.</p>
 
@@ -94,11 +94,11 @@
 
 <h1 id="irrational-temperature-data">Irrational temperature data</h1>
 
-<p>I noticed that once in a while, particularly when testing it in the freezer, my DHT22 sensor returned irrational data: either 150°C/100% RH or 50°C/0% RH. I’m not sure why this happened; maybe it was just a bad part. The datasheet doesn’t mention anything about these values, but I ordered the sensor from Aliexpress so who knows if it’s even the real thing. Anyway, I added a check for these specific pairs that causes the program to leave the sensor powered on for a couple seconds then try again. This seemed to usually result in a successful reading.</p>
+<p>I noticed that once in a while, particularly when testing it in the freezer, my DHT22 sensor returns irrational data: either 150°C/100% RH or 50°C/0% RH. I’m not sure why this happens; maybe it’s just a bad part. The datasheet doesn’t mention anything about these values, but I ordered the sensor from Aliexpress so who knows if it’s even the real thing. Anyway, I added a check for these specific pairs that causes the program to leave the sensor powered on for a couple seconds then try again. This seems to usually result in a successful reading.</p>
 
 <h1 id="low-battery-detection">Low-battery detection</h1>
 
-<p>The v2.1 protocol supports a low-battery flag, which I didn’t implement in the prototype. The ATtiny85 can use its Analog to Digital Converter to calculate its own supply voltage by setting the reference voltage for a comparison to Vcc and the measurement voltage to the internal 1.1 V reference. By inverting result, you can solve for Vcc.</p>
+<p>The v2.1 protocol supports a low-battery flag, which I didn’t bother to implement in the prototype. The ATtiny85 can use its Analog to Digital Converter to calculate its own supply voltage by setting the reference voltage for a comparison to Vcc and the measurement voltage to the internal 1.1 V reference. By inverting the result, you can solve for Vcc.</p>
 
 <p>If the calculated Vcc is lower than a certain threshold, the low-battery flag is set in the transmission.</p>
 
@@ -106,7 +106,7 @@
 
 <p>The sensor can mark transmissions as channel 1, 2, or 3. I initially implemented some startup logic to read the channel setting from two input pins, but when I added the crystal oscillator I had to give those up. Instead, I made it so resetting the device via the external reset pin (which can be differentiated in software from a reset triggered by power-cycling the device) increments a value stored in the EEPROM, and this value is used to determine the channel number.</p>
 
-<p>The stored value is also used as the seed for the random number generator that picks the rolling ID. This means the behaviour of the sensor is slightly different from the factory one, in that the rolling ID only changes on reset and not on powering off/on. I find this to be an improvement, since the base station usually refurses to display a transmissios for a given channel if the rolling ID is different from the value in the previous transmission.</p>
+<p>The stored value is also used as the seed for the random number generator that picks the rolling ID. This means the behaviour of the sensor is slightly different from the factory one, in that the rolling ID only changes on reset and not on powering off/on. I find this to be an improvement, since the base station usually refuses to display subsequent transmissions on a given channel after the rolling ID changes.</p>
 
 <h1 id="sleeping-and-waking-using-the-watchdog-timer">Sleeping and waking using the watchdog timer</h1>
 
@@ -134,11 +134,11 @@
 
 <p><img src="/assets/images/blog/2023-01-03/bottom.jpg" class="small" /></p>
 
-<p>All of the components I selected are pretty flexible in terms of what voltage they’ll operate on. This circuit can be powered by two or three AAA or AA cells, depending on the desired battery life and signal power. A device reset/channel change can be triggered by using a metal screwdriver to briefly connect the reset pin and ground (i.e. the top-left-most two blobs in the last picture).</p>
+<p>All of the components I selected are pretty flexible in terms of what voltage they’ll operate on. As a result, this circuit can be powered by either two or three AAA or AA cells, depending on the desired battery life and signal power. A device reset/channel change can be triggered by using a metal screwdriver to briefly connect the reset pin and ground (i.e. the top-left-most two blobs in the last picture).</p>
 
 <h1 id="code">Code</h1>
 
-<p>Also hosted on GitHub, <a href="https://github.com/sjahu/oregon-scientific">here</a>. The code below is up-to-date only as of the initial commit in the linked repo.</p>
+<p>Also hosted on GitHub, <a href="https://github.com/sjahu/OS21Tx">here</a>. The code below is up-to-date only as of the initial commit in the linked repo.</p>
 
 <h2 id="sensorino">sensor.ino</h2>
 
@@ -147,7 +147,7 @@
  * 433.92 MHz weather sensor protocol.
  *
  * This sketch replicates the behaviour of the Oregon Scientific THGR122NX sensor.
- * 
+ *
  * Most of the pin assignments defined below are flexible; the only one that isn't is T0,
  * which must be connected to the external oscillator clocking Timer/Counter0. On the
  * ATTiny85, T0 is on PB2.
@@ -217,7 +217,7 @@
     <span class="o">++</span><span class="n">resetCount</span><span class="p">;</span>
     <span class="n">EEPROM</span><span class="p">.</span><span class="n">put</span><span class="p">(</span><span class="n">RESET_COUNT_ADDR</span><span class="p">,</span> <span class="n">resetCount</span><span class="p">);</span>
   <span class="p">}</span>
-  
+
   <span class="kt">uint8_t</span> <span class="n">channel</span> <span class="o">=</span> <span class="p">(</span><span class="n">resetCount</span> <span class="o">%</span> <span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span> <span class="c1">// i.e. 1, 2, or 3</span>
   <span class="n">randomSeed</span><span class="p">(</span><span class="n">resetCount</span><span class="p">);</span> <span class="c1">// Seed RNG for picking Rolling ID</span>
 
@@ -236,14 +236,14 @@
   <span class="n">wdt_reset</span><span class="p">();</span> <span class="c1">// With the WDE bit set, too, WDIE is cleared when a timeout occurs, putting the watchdog in reset mode</span>
   <span class="n">sleep_cpu</span><span class="p">();</span> <span class="c1">// So if something in the following sensor or tx code hangs for more than 2s, the watchdog will trigger a chip reset</span>
   <span class="n">sleep_disable</span><span class="p">();</span>
-  
+
   <span class="kt">float</span> <span class="n">t</span><span class="p">,</span> <span class="n">h</span><span class="p">;</span>
   <span class="n">dht</span><span class="p">.</span><span class="n">read</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">h</span><span class="p">);</span>
 
   <span class="k">if</span> <span class="p">(</span><span class="n">dht</span><span class="p">.</span><span class="n">irrationalReading</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">h</span><span class="p">))</span> <span class="p">{</span>
     <span class="k">return</span><span class="p">;</span> <span class="c1">// Try again if we get a known bad reading</span>
   <span class="p">}</span>
-  
+
   <span class="n">dht</span><span class="p">.</span><span class="n">powerOff</span><span class="p">();</span>
 
 <span class="cp">#ifdef LOW_BATTERY
@@ -262,7 +262,7 @@
   <span class="n">wdt_reset</span><span class="p">();</span>
   <span class="n">sleep_cpu</span><span class="p">();</span> <span class="c1">// This is probably overly cautious, but I'm not using a loop here</span>
   <span class="n">sleep_cpu</span><span class="p">();</span> <span class="c1">// because if cosmic rays or something disrupted the counter, we</span>
-  <span class="n">sleep_cpu</span><span class="p">();</span> <span class="c1">// could be sleeping for a very long time, since the watchdog timer </span>
+  <span class="n">sleep_cpu</span><span class="p">();</span> <span class="c1">// could be sleeping for a very long time, since the watchdog timer</span>
   <span class="n">sleep_cpu</span><span class="p">();</span> <span class="c1">// reset is disabled at this point</span>
   <span class="n">sleep_cpu</span><span class="p">();</span>
   <span class="n">sleep_disable</span><span class="p">();</span>
@@ -275,22 +275,22 @@
 
 <span class="kt">long</span> <span class="nf">getVcc</span><span class="p">()</span> <span class="p">{</span>
   <span class="kt">uint8_t</span> <span class="n">_ADCSRA</span> <span class="o">=</span> <span class="n">ADCSRA</span><span class="p">;</span>
-  
+
   <span class="n">ADCSRA</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">ADEN</span><span class="p">);</span> <span class="c1">// Enable ADC</span>
   <span class="n">ADMUX</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">MUX3</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">MUX2</span><span class="p">);</span> <span class="c1">// Vcc as voltage reference; 1.1V bandgap voltage as measurement target</span>
-  
+
   <span class="n">delay</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span> <span class="c1">// Allow ADC to settle after switching to internal voltage reference (as per datasheet)</span>
-  
+
   <span class="n">ADCSRA</span> <span class="o">|=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">ADSC</span><span class="p">);</span> <span class="c1">// Start conversion</span>
   <span class="k">while</span> <span class="p">(</span><span class="n">ADCSRA</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">ADSC</span><span class="p">));</span>
- 
+
   <span class="kt">uint8_t</span> <span class="n">adcl</span>  <span class="o">=</span> <span class="n">ADCL</span><span class="p">;</span>
   <span class="kt">uint8_t</span> <span class="n">adch</span> <span class="o">=</span> <span class="n">ADCH</span><span class="p">;</span>
-  
+
   <span class="kt">uint16_t</span> <span class="n">result</span> <span class="o">=</span> <span class="p">(</span><span class="n">adch</span> <span class="o">&lt;&lt;</span> <span class="mi">8</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">adcl</span> <span class="o">&lt;&lt;</span> <span class="mi">0</span><span class="p">);</span> <span class="c1">// result is 10 bits (max 1023)</span>
 
   <span class="n">ADCSRA</span> <span class="o">=</span> <span class="n">_ADCSRA</span><span class="p">;</span>
-  
+
   <span class="k">return</span> <span class="mi">1125300L</span> <span class="o">/</span> <span class="n">result</span><span class="p">;</span> <span class="c1">// Vcc in mV (1.1 * 1023 * 1000 = 1125300)</span>
 <span class="p">}</span>
 </code></pre></div></div>
@@ -325,7 +325,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */</span>
- 
+
 <span class="cp">#ifndef DHTWRAPPER_H
 #define DHTWRAPPER_H
 </span>
@@ -355,7 +355,7 @@
 
   <span class="kt">void</span> <span class="n">powerOff</span><span class="p">()</span> <span class="p">{</span>
     <span class="n">digitalWrite</span><span class="p">(</span><span class="n">powerPin</span><span class="p">,</span> <span class="n">LOW</span><span class="p">);</span>
-    
+
     <span class="n">pinMode</span><span class="p">(</span><span class="n">dataPin</span><span class="p">,</span> <span class="n">OUTPUT</span><span class="p">);</span>
     <span class="n">digitalWrite</span><span class="p">(</span><span class="n">dataPin</span><span class="p">,</span> <span class="n">LOW</span><span class="p">);</span>
   <span class="p">}</span>
@@ -372,7 +372,7 @@
       <span class="p">(</span><span class="n">t</span> <span class="o">==</span> <span class="mf">0.0</span>   <span class="o">&amp;&amp;</span> <span class="n">h</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">||</span> <span class="c1">// Returned by DHT::read() when the reading times out; rare if the sensor is given long enough to power on, but still possible</span>
       <span class="p">(</span><span class="n">t</span> <span class="o">==</span> <span class="mf">150.0</span> <span class="o">&amp;&amp;</span> <span class="n">h</span> <span class="o">==</span> <span class="mf">100.0</span><span class="p">)</span> <span class="o">||</span> <span class="c1">// My sensor seems to sometimes return irrational data pairs like this and the next one. Maybe it's a bad part ¯\_(ツ)_/¯</span>
       <span class="p">(</span><span class="n">t</span> <span class="o">==</span> <span class="mf">50.0</span>  <span class="o">&amp;&amp;</span> <span class="n">h</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">)</span>
-    <span class="p">);</span>    
+    <span class="p">);</span>
   <span class="p">}</span>
 <span class="p">};</span>
 
@@ -383,10 +383,10 @@
 
 <div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/*
  * A library for transmitting temperature and humidity data via the Oregon Scientific v2.1 protocol.
- * 
+ *
  * Requires a 433.92 MHz transmitter connected to a digital pin and a 32 768 Hz crystal oscillator
  * connected to T0 (PB2 on ATTiny85).
- * 
+ *
  * Assumes that an interrupt waking the CPU from sleep will occur 2 048 times per second. It should
  * be straightforward to change how this interrupt is generated (e.g. to use an oscillator with a
  * different frequency) by modifying the configureTimer() and restoreTimer() functions below.
@@ -520,10 +520,10 @@
 
   <span class="kt">void</span> <span class="n">setHumidity</span><span class="p">(</span><span class="kt">float</span> <span class="n">h</span><span class="p">)</span> <span class="p">{</span>
     <span class="n">h</span> <span class="o">+=</span> <span class="mf">0.5</span><span class="p">;</span> <span class="c1">// Round to the nearest one by adding 0.5 then truncating the decimal</span>
-    
+
     <span class="k">const</span> <span class="kt">uint8_t</span> <span class="n">h_ones</span> <span class="o">=</span> <span class="p">((</span><span class="kt">int</span><span class="p">)(</span><span class="n">h</span> <span class="o">*</span> <span class="mi">10</span><span class="p">)</span> <span class="o">/</span> <span class="mi">10</span><span class="p">)</span> <span class="o">%</span> <span class="mi">10</span><span class="p">;</span>
     <span class="k">const</span> <span class="kt">uint8_t</span> <span class="n">h_tens</span> <span class="o">=</span> <span class="p">((</span><span class="kt">int</span><span class="p">)(</span><span class="n">h</span> <span class="o">*</span> <span class="mi">10</span><span class="p">)</span> <span class="o">/</span> <span class="mi">100</span><span class="p">)</span> <span class="o">%</span> <span class="mi">10</span><span class="p">;</span>
-  
+
     <span class="n">data</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span> <span class="o">&amp;=</span> <span class="mh">0x0f</span><span class="p">;</span> <span class="n">data</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span> <span class="o">|=</span> <span class="p">((</span><span class="n">h_ones</span> <span class="o">&lt;&lt;</span> <span class="mi">4</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xf0</span><span class="p">);</span>
     <span class="n">data</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span> <span class="o">&amp;=</span> <span class="mh">0xf0</span><span class="p">;</span> <span class="n">data</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span> <span class="o">|=</span> <span class="p">((</span><span class="n">h_tens</span> <span class="o">&lt;&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0x0f</span><span class="p">);</span>
   <span class="p">}</span>
@@ -542,7 +542,7 @@
 
   <span class="kt">void</span> <span class="n">sendData</span><span class="p">()</span> <span class="p">{</span>
     <span class="n">configureTimer</span><span class="p">();</span>
-    
+
     <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">DATA_LEN</span> <span class="o">*</span> <span class="mi">8</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span> <span class="c1">// Bits are transmitted LSB-first</span>
       <span class="n">sendBit</span><span class="p">((</span><span class="n">data</span><span class="p">[</span><span class="n">i</span> <span class="o">/</span> <span class="mi">8</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="p">(</span><span class="n">i</span> <span class="o">%</span> <span class="mi">8</span><span class="p">))</span> <span class="o">&amp;</span> <span class="mh">0x1</span><span class="p">);</span>
     <span class="p">}</span>
@@ -555,7 +555,7 @@
     <span class="k">if</span> <span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="p">{</span>
       <span class="n">sendZero</span><span class="p">();</span> <span class="c1">// Recall that each bit is sent twice, inverted first</span>
       <span class="n">sendOne</span><span class="p">();</span>
-    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>        
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
       <span class="n">sendOne</span><span class="p">();</span>
       <span class="n">sendZero</span><span class="p">();</span>
     <span class="p">}</span>
@@ -565,7 +565,7 @@
     <span class="n">writeSyncBit</span><span class="p">(</span><span class="n">LOW</span><span class="p">);</span>
     <span class="n">writeSyncBit</span><span class="p">(</span><span class="n">HIGH</span><span class="p">);</span>
   <span class="p">}</span>
-  
+
   <span class="kt">void</span> <span class="n">sendOne</span><span class="p">()</span> <span class="p">{</span>
     <span class="n">writeSyncBit</span><span class="p">(</span><span class="n">HIGH</span><span class="p">);</span>
     <span class="n">writeSyncBit</span><span class="p">(</span><span class="n">LOW</span><span class="p">);</span>
@@ -573,46 +573,46 @@
 
   <span class="k">static</span> <span class="kt">uint8_t</span> <span class="n">checksumSimple</span><span class="p">(</span><span class="k">const</span> <span class="kt">uint8_t</span> <span class="n">data</span><span class="p">[],</span> <span class="kt">uint64_t</span> <span class="n">mask</span><span class="p">)</span> <span class="p">{</span>
     <span class="kt">uint16_t</span> <span class="n">s</span> <span class="o">=</span> <span class="mh">0x0000</span><span class="p">;</span>
-  
+
     <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">64</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
       <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">((</span><span class="n">mask</span> <span class="o">&gt;&gt;</span> <span class="n">i</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0x1</span><span class="p">))</span> <span class="k">continue</span><span class="p">;</span> <span class="c1">// Skip nibbles that aren't set in the mask</span>
-  
+
       <span class="n">s</span> <span class="o">+=</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span> <span class="o">/</span> <span class="mi">2</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="p">((</span><span class="n">i</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="mi">4</span><span class="p">))</span> <span class="o">&amp;</span> <span class="mh">0xf</span><span class="p">;</span> <span class="c1">// Sum data nibble by nibble</span>
       <span class="n">s</span> <span class="o">+=</span> <span class="p">(</span><span class="n">s</span> <span class="o">&gt;&gt;</span> <span class="mi">8</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0x1</span><span class="p">;</span> <span class="c1">// Add any overflow back into the sum</span>
       <span class="n">s</span> <span class="o">&amp;=</span> <span class="mh">0xff</span><span class="p">;</span>
     <span class="p">}</span>
-  
+
     <span class="k">return</span> <span class="n">s</span><span class="p">;</span>
   <span class="p">}</span>
 
-  
+
   <span class="k">static</span> <span class="kt">uint8_t</span> <span class="n">checksumCRC</span><span class="p">(</span><span class="k">const</span> <span class="kt">uint8_t</span> <span class="n">data</span><span class="p">[],</span> <span class="kt">uint64_t</span> <span class="n">mask</span><span class="p">,</span> <span class="kt">uint8_t</span> <span class="n">iv</span><span class="p">)</span> <span class="p">{</span>
     <span class="kt">uint16_t</span> <span class="n">s</span> <span class="o">=</span> <span class="n">iv</span><span class="p">;</span>
-  
+
     <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">64</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
       <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">((</span><span class="n">mask</span> <span class="o">&gt;&gt;</span> <span class="n">i</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0x1</span><span class="p">))</span> <span class="k">continue</span><span class="p">;</span> <span class="c1">// Skip nibbles that aren't set in the mask</span>
-  
+
       <span class="kt">uint8_t</span> <span class="n">nibble</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span> <span class="o">/</span> <span class="mi">2</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="p">((</span><span class="n">i</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="mi">4</span><span class="p">))</span> <span class="o">&amp;</span> <span class="mh">0xf</span><span class="p">;</span>
-  
+
       <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">3</span><span class="p">;</span> <span class="n">j</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">;</span> <span class="o">--</span><span class="n">j</span><span class="p">)</span> <span class="p">{</span>
         <span class="kt">uint8_t</span> <span class="n">bit</span> <span class="o">=</span> <span class="p">(</span><span class="n">nibble</span> <span class="o">&gt;&gt;</span> <span class="n">j</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0x1</span><span class="p">;</span>
-  
+
         <span class="n">s</span> <span class="o">&lt;&lt;=</span> <span class="mi">1</span><span class="p">;</span>
         <span class="n">s</span> <span class="o">|=</span> <span class="n">bit</span><span class="p">;</span>
-  
+
         <span class="k">if</span> <span class="p">(</span><span class="n">s</span> <span class="o">&amp;</span> <span class="mh">0x100</span><span class="p">)</span> <span class="p">{</span>
           <span class="n">s</span> <span class="o">^=</span> <span class="n">CRC_POLY</span><span class="p">;</span>
         <span class="p">}</span>
       <span class="p">}</span>
     <span class="p">}</span>
-  
+
     <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">8</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
       <span class="n">s</span> <span class="o">&lt;&lt;=</span> <span class="mi">1</span><span class="p">;</span>
       <span class="k">if</span> <span class="p">(</span><span class="n">s</span> <span class="o">&amp;</span> <span class="mh">0x100</span><span class="p">)</span> <span class="p">{</span>
         <span class="n">s</span> <span class="o">^=</span> <span class="n">CRC_POLY</span><span class="p">;</span>
       <span class="p">}</span>
     <span class="p">}</span>
-  
+
     <span class="k">return</span> <span class="n">s</span><span class="p">;</span>
   <span class="p">}</span>
 
@@ -620,7 +620,7 @@
     <span class="c1">// Synchronise writes to the 2048 Hz timer by sleeping until the timer interrupt</span>
     <span class="c1">// This works so long as there's less than 488 us worth of computation between write calls</span>
     <span class="n">sleep_cpu</span><span class="p">();</span> <span class="c1">// Sleep right before a pin change (rather than after) to ensure all edges are identically spaced</span>
-    <span class="n">digitalWrite</span><span class="p">(</span><span class="n">pin</span><span class="p">,</span> <span class="n">val</span><span class="p">);</span> 
+    <span class="n">digitalWrite</span><span class="p">(</span><span class="n">pin</span><span class="p">,</span> <span class="n">val</span><span class="p">);</span>
   <span class="p">}</span>
 
   <span class="kt">void</span> <span class="n">configureTimer</span><span class="p">()</span> <span class="p">{</span>
@@ -642,7 +642,7 @@
 
   <span class="kt">void</span> <span class="n">restoreTimer</span><span class="p">()</span> <span class="p">{</span>
     <span class="n">sleep_disable</span><span class="p">();</span>
-  
+
     <span class="n">cli</span><span class="p">();</span>
     <span class="n">TCCR0A</span> <span class="o">=</span> <span class="n">old_TCCR0A</span><span class="p">;</span>
     <span class="n">TCCR0B</span> <span class="o">=</span> <span class="n">old_TCCR0B</span><span class="p">;</span>
