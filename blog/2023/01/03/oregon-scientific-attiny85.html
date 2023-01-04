@@ -1,0 +1,684 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <title>ATtiny85-based Oregon Scientific v2.1 remote temperature sensor | Stephen's Site</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="/blog/feed.xml">
+</head>
+
+<body>
+  <div id="default-container">
+    <div id="default-header">
+      
+      <nav>
+        <a href="/">Home</a>
+        <a href="/blog">Blog</a>
+      </nav>
+      
+    </div>
+
+    <div id="default-content">
+      <h1 class="post-title">ATtiny85-based Oregon Scientific v2.1 remote temperature sensor</h1>
+<div class="post-publish-date">Published Tuesday, January 03, 2023</div>
+
+<section class="post-content">
+  <p>In my <a href="/blog/2022/12/04/oregon-scientific">last post</a>, I showed off a prototype of my Arduino-based Oregon Scientific v2.1 sensor. It worked, but it wouldn’t be very practical for real use. Let’s take a look at building a more “production-ready” version. The following headers are in no particular order; a wiring schematic (if you can call it that) is near the bottom of the post, and so is the code.</p>
+
+<h1 id="bill-of-materials">Bill of materials</h1>
+
+<ul>
+  <li><a href="https://www.digikey.ca/en/products/detail/microchip-technology/ATTINY85V-10PU/735471">ATTINY85V-10PU</a></li>
+  <li><a href="https://www.digikey.ca/en/products/detail/sparkfun-electronics/PRT-08808/7387401">1” × 1” perfboard</a></li>
+  <li><a href="https://www.aliexpress.com/item/32980820915.html">433 MHz transmitter</a></li>
+  <li><a href="https://www.aliexpress.com/item/32523611214.html">DHT22 sensor</a></li>
+  <li>2x <a href="https://www.amazon.ca/dp/B08DNF191P">100 nF capacitor</a></li>
+  <li><a href="https://www.digikey.com/en/products/detail/micro-crystal-ag/OM-7605-C8-32-768KHZ-20PPM-TA-QC/10499153">32 768 Hz crystal oscillator</a></li>
+</ul>
+
+<p>This comes out to about $10 CAD if you ignore my wasted shipping costs from placing multiple orders, the fact that I actually bought several of each part, and the large Amazon markup I paid to get a box of several hundred capacitors shipped next-day rather than waiting for delivery from China.</p>
+
+<h1 id="microcontroller">Microcontroller</h1>
+
+<p>The Arduino-on-breadboard form factor, while great for prototyping, is too expensive (25 USD for an <a href="https://store-usa.arduino.cc/products/arduino-leonardo-with-headers">Arduino Leonardo</a>), too large (2.7” × 2.1”), and too power-hungry (it draws ~20 mA at 3.3 V running an empty Arduino sketch at 16 MHz) to use for something as simple and portable as a temperature sensor.</p>
+
+<p>I chose an ATtiny85 microcontroller as the brain for version 2 of my sensor since it’s compatible with the Arduino IDE but tiny (so accurately named!) and cheap. A 1” square perfboard provides a perfect platform for the 8 pin chip and the the few necessary peripherals.</p>
+
+<h1 id="programming-the-attiny85">Programming the ATtiny85</h1>
+
+<p>I programmed the ATtiny85 using my Arduino Leonardo board and the ArduinoISP sketch included with the Arduino IDE. It’s easy to find instructions on how to do this, e.g. <a href="https://petervanhoyweghen.wordpress.com/2012/09/16/arduinoisp-on-the-leonardo/">here</a>.</p>
+
+<figure class="medium">
+  <img src="/assets/images/blog/2023-01-03/arduino_isp.jpg" class="medium" />
+  <figcaption>Flashing the firmware.</figcaption>
+</figure>
+
+<h1 id="power-consumption">Power consumption</h1>
+
+<p>Out of the box, an Arduino board running a naïvely written sketch can be impractical to run on battery power; assuming a capacity of 1200 mAh per AAA cell, a constant load of 20 mA (as quoted above for an empty sketch running on an Arduino Leonardo at 16 MHz and 3.3 V) would drain two cells in only about 5 days. Nick Gammon describes some ways to save power in microcontroller projects <a href="http://www.gammon.com.au/power">here</a>. Based on those tips, I made the following optimizations:</p>
+
+<ul>
+  <li>lose the development board and just use the microcontroller on its own,</li>
+  <li>disable the Analog to Digital converter when not in use,</li>
+  <li>use as low a clock speed as possible,</li>
+  <li>power off peripherals (sensor, radio, oscillator) when not in use, and</li>
+  <li>don’t busy-wait; use the microcontroller’s power-off sleep mode whenever possible.</li>
+</ul>
+
+<p>I set the ATtiny to run at 8 MHz, instead of 16, which saves a significant amount of power when the CPU is running. The microcontroller’s internal oscillator can also run at 1 MHz, but that’s too slow to interface with the DHT22 sensor, at least with the library I was using.</p>
+
+<p>Powered on but not transmitting, the 433 MHz transmitter drew about 4.7 mA; transmitting, this jumped to 25.5 mA. The DHT22 drew about 170 µA at idle and a few mA when in use. The oscillator also drew a few µA when powered on. All of these would reduce battery life if they were powered on all the time, so I elected to switch them on only when necessary. Since each pin on the ATtiny can supply 40 mA, it’s fine to drive the peripherals directly.</p>
+
+<p>In power-off sleep with all the peripherals unpowered and the ADC disabled, I found that the ATtiny85 used about only about 4.4 µA at 3.3 V. This is basically a rounding error compared to the power usage when not sleeping: ~4 mA by the microcontroller itself when the processor is running for a fraction of a second, plus 25 mA for 0.2 seconds when transmitting (the signal takes about 0.2 seconds to send and we send it twice; given a 50% duty cycle that means the transmitter is powered for 0.2 seconds). Plugging those rough numbers into a calculation indicates that two AAAs should power the device for at least a year and a half.</p>
+
+<h1 id="timing">Timing</h1>
+
+<p>I mentioned in my previous post that the Oregon Scientific base station is very picky about timing– if the timing of a transmission is off from 1024 Hz by more than about +/- 3 µs per cycle, the transmission will be ignored. That’s a tolerance of about 0.3%, which I achieved in the prototype by calibrating the delay used to generate the output signal based on the signal’s measured frequency. Unfortunately, the ATtiny85’s internal <a href="https://en.wikipedia.org/wiki/RC_oscillator">RC oscillator</a> is not particularly stable with respect to voltage or temperature, both of which will vary in this application as the battery wear and weather conditions change. According to the <a href="https://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-2586-AVR-8-bit-Microcontroller-ATtiny25-ATtiny45-ATtiny85_Datasheet.pdf">datasheet</a> (which was an invaluable resource at every step of this build), the frequency can vary by nearly 4%, which is an order of magnitute more what would be acceptable. When I tested this by putting my ATtiny-based v2 prototype, which worked at room temperature, in the freezer, the base station quickly stopped receiving transmissions and the recordings that I captured on my laptop confirmed that the signal’s frequency had dropped well out of spec.</p>
+
+<p><img src="/assets/images/blog/2023-01-03/datasheet_oscillator_frequency.png" /></p>
+
+<p>I toyed with the idea of trying to model the expected internal oscillator frequency based on the instantaneous measured temperature and voltage, but it seemed very unlikely that the results would be precise enough to be worth the effort. The consensus on AVRFreaks.net when somebody else <a href="https://www.avrfreaks.net/s/topic/a5C3l000000UNwDEAW/t105811">considered doing something similar</a> was that, “unless your widget will be produced by ten of millions pieces a year”, “do not fuck your brain … connect a crystal to it”. Sage advice. Instead, I ordered a 32 768 Hz crystal oscillator, guaranteed to be accurate to ±20 ppm (parts per million) at room temperature and up to an additional 150 ppm off at the extremes of -40°C to 90°C. That’s an order of magnitude <em>better</em> than the receiver requires.</p>
+
+<p>The ATtiny85 supports clocking the entire device with an external oscillator or crystal. In this case, however, I didn’t care what frequency computations were performed at, which is why, instead of replacing the device clock source, I opted to use a crystal oscillator with a frequency divisible by 1024 Hz as the clock source only for Timer0, leaving the CPU to use the imprecise internal oscillator. I rewrote the signal generation code to use sleeps and interrupts (occurring every 16 ticks of the 32 768 Hz oscillator, i.e. at 2048 Hz) to generate the output signal. This resulted in an acceptable level of precision over the whole voltage and temperature range.</p>
+
+<p>Aside: <em>why 32 768 Hz?</em>, you might ask. Well, 32 768 is divisible by 2048, so it’s a suitable frequency for this particular task. Secondarily, 32 768 Hz crystal oscillators are extremely abundant and cheap because they’re commonly used in real-time clock applications (like almost all digital watches)– you can measure exactly 1 second using a 32 768 Hz oscillator and a 15-bit binary counter.</p>
+
+<p>The watch crystal worked well, but I misread the datasheet when ordering it and was unpleasantly surprised to find that it was only 2 mm² in area. This crumb-sized component proved very difficult to solder onto my perfboard; I ended up having to place it at an angle to get three of the pins touching solder pads, then use a glob of solder between the fourth pad and metal lid to establish the ground connection. If I ever build another one of these, I’ll design a real PCB with properly spaced pads.</p>
+
+<figure class="small">
+  <img src="/assets/images/blog/2023-01-03/oscillator.jpg" class="small" />
+  <figcaption>Zoom in.</figcaption>
+</figure>
+
+<h1 id="irrational-temperature-data">Irrational temperature data</h1>
+
+<p>I noticed that once in a while, particularly when testing it in the freezer, my DHT22 sensor returned irrational data: either 150°C/100% RH or 50°C/0% RH. I’m not sure why this happened; maybe it was just a bad part. The datasheet doesn’t mention anything about these values, but I ordered the sensor from Aliexpress so who knows if it’s even the real thing. Anyway, I added a check for these specific pairs that causes the program to leave the sensor powered on for a couple seconds then try again. This seemed to usually result in a successful reading.</p>
+
+<h1 id="low-battery-detection">Low-battery detection</h1>
+
+<p>The v2.1 protocol supports a low-battery flag, which I didn’t implement in the prototype. The ATtiny85 can use its Analog to Digital Converter to calculate its own supply voltage by setting the reference voltage for a comparison to Vcc and the measurement voltage to the internal 1.1 V reference. By inverting result, you can solve for Vcc.</p>
+
+<p>If the calculated Vcc is lower than a certain threshold, the low-battery flag is set in the transmission.</p>
+
+<h1 id="channel-selection">Channel selection</h1>
+
+<p>The sensor can mark transmissions as channel 1, 2, or 3. I initially implemented some startup logic to read the channel setting from two input pins, but when I added the crystal oscillator I had to give those up. Instead, I made it so resetting the device via the external reset pin (which can be differentiated in software from a reset triggered by power-cycling the device) increments a value stored in the EEPROM, and this value is used to determine the channel number.</p>
+
+<p>The stored value is also used as the seed for the random number generator that picks the rolling ID. This means the behaviour of the sensor is slightly different from the factory one, in that the rolling ID only changes on reset and not on powering off/on. I find this to be an improvement, since the base station usually refurses to display a transmissios for a given channel if the rolling ID is different from the value in the previous transmission.</p>
+
+<h1 id="sleeping-and-waking-using-the-watchdog-timer">Sleeping and waking using the watchdog timer</h1>
+
+<p>The ATtiny85 supports various sleep modes, including power-down mode, which uses the least power. To wake up from power-down sleep, you can use the microcontroller’s built-in watchdog timer to trigger an interrupt after a certain interval. (The watchdog timer can operate in two modes: reset mode, where it triggers a system reset when its timer matches, or interrupt mode, where it triggers an interrupt and doesn’t reset the chip.)</p>
+
+<p>The <a href="https://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-2586-AVR-8-bit-Microcontroller-ATtiny25-ATtiny45-ATtiny85_Datasheet.pdf">datasheet</a> has a lot of good information on using the watchdog timer; see also the code, below, for exactly how I implemented this.</p>
+
+<p>As a bonus safety feature, I configured the watchdog timer to trigger a rest (not an interrupt) if the code in the main loop (reading the sensor, generating the data, transmitting the signal) ever gets stuck.</p>
+
+<h1 id="circuit-assembly">Circuit assembly</h1>
+
+<figure class="medium">
+  <img src="/assets/images/blog/2023-01-03/attiny85_breadboard.jpg" class="medium" />
+  <figcaption>Prototype v2.</figcaption>
+</figure>
+
+<p>Converting my v2 prototype into the final build was in principle straightforward, but took a lot of work. I planned out a circuit to connect the microcontroller pins to the radio, sensor, and oscillator as described in the code, then soldered it all together. Note the 100 nF capacitors connected between power and ground of the ATtiny85 and the DHT22: these are to <a href="https://en.wikipedia.org/wiki/Decoupling_capacitor">decouple</a> the chips from the power supply.</p>
+
+<figure class="large">
+  <img src="/assets/images/blog/2023-01-03/schematic.jpg" class="large" />
+  <figcaption>Does this count as a schematic?</figcaption>
+</figure>
+
+<p><img src="/assets/images/blog/2023-01-03/top.jpg" class="small" /></p>
+
+<p><img src="/assets/images/blog/2023-01-03/bottom.jpg" class="small" /></p>
+
+<p>All of the components I selected are pretty flexible in terms of what voltage they’ll operate on. This circuit can be powered by two or three AAA or AA cells, depending on the desired battery life and signal power. A device reset/channel change can be triggered by using a metal screwdriver to briefly connect the reset pin and ground (i.e. the top-left-most two blobs in the last picture).</p>
+
+<h1 id="code">Code</h1>
+
+<p>Also hosted on GitHub, <a href="https://github.com/sjahu/oregon-scientific">here</a>. The code below is up-to-date only as of the initial commit in the linked repo.</p>
+
+<h2 id="sensorino">sensor.ino</h2>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/*
+ * ATTiny85-based temperature/humidity sensor compatible with the Oregon Scientific v2.1
+ * 433.92 MHz weather sensor protocol.
+ *
+ * This sketch replicates the behaviour of the Oregon Scientific THGR122NX sensor.
+ * 
+ * Most of the pin assignments defined below are flexible; the only one that isn't is T0,
+ * which must be connected to the external oscillator clocking Timer/Counter0. On the
+ * ATTiny85, T0 is on PB2.
+ *
+ * More info here: https://shumphries.ca/blog/2023/01/03/oregon-scientific-attiny85
+ *
+ * LICENCE
+ *
+ * Copyright © 2023 Stephen Humphries
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */</span>
+
+<span class="cp">#include</span> <span class="cpf">&lt;avr/sleep.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;avr/wdt.h&gt;</span><span class="cp">
+</span>
+<span class="cp">#include</span> <span class="cpf">"DHTWrapper.h"</span><span class="cp">
+#define DHT_DATA_PIN 4 // I/O for the temperature/humidity sensor
+#define DHT_POWER_PIN 3
+</span><span class="n">DHTWrapper</span> <span class="n">dht</span> <span class="o">=</span> <span class="n">DHTWrapper</span><span class="p">(</span><span class="n">DHT_DATA_PIN</span><span class="p">,</span> <span class="n">DHT_POWER_PIN</span><span class="p">);</span>
+
+<span class="cp">#define T0_PIN 2
+#define T0_XO_POWER_PIN 1 // Power for the crystal oscillator clocking Timer0
+#include</span> <span class="cpf">"OS21Tx.h"</span><span class="cp">
+#define TX_PIN 0 // Output for the 433.92 Mhz modulator
+</span><span class="n">OS21Tx</span> <span class="n">tx</span> <span class="o">=</span> <span class="n">OS21Tx</span><span class="p">(</span><span class="n">TX_PIN</span><span class="p">);</span>
+
+<span class="cp">#include</span> <span class="cpf">&lt;EEPROM.h&gt;</span><span class="cp">
+#define RESET_COUNT_ADDR 0 // Where to store the current reset count (used for seeding RNG and saving channel setting)
+</span>
+<span class="cp">#define RESET_PIN 5
+</span>
+<span class="cp">#define LOW_BATTERY 2000 // Threshold in mV (2V picked with 2x 1.5V AAA cells in mind. Adjust as required.)
+</span>
+<span class="kt">void</span> <span class="nf">setup</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">cli</span><span class="p">();</span>
+  <span class="kt">uint8_t</span> <span class="n">_MCUSR</span> <span class="o">=</span> <span class="n">MCUSR</span><span class="p">;</span>
+  <span class="n">MCUSR</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="c1">// As per the datasheet, if a watchdog timer reset status flag is set, it must be cleared ASAP</span>
+  <span class="n">wdt_disable</span><span class="p">();</span> <span class="c1">// Otherwise, the watchdog timer will start over immediately with the smallest prescale value</span>
+  <span class="n">sei</span><span class="p">();</span>
+
+  <span class="n">ADCSRA</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="c1">// Disable Analog to Digital Converter (wastes power)</span>
+
+  <span class="n">pinMode</span><span class="p">(</span><span class="n">RESET_PIN</span><span class="p">,</span> <span class="n">INPUT_PULLUP</span><span class="p">);</span> <span class="c1">// Leaving the reset pin floating can trigger random resets</span>
+
+  <span class="n">pinMode</span><span class="p">(</span><span class="n">T0_XO_POWER_PIN</span><span class="p">,</span> <span class="n">OUTPUT</span><span class="p">);</span>
+
+  <span class="kt">uint32_t</span> <span class="n">resetCount</span><span class="p">;</span>
+  <span class="n">EEPROM</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">RESET_COUNT_ADDR</span><span class="p">,</span> <span class="n">resetCount</span><span class="p">);</span>
+  <span class="k">if</span> <span class="p">(</span><span class="n">_MCUSR</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">EXTRF</span><span class="p">))</span> <span class="p">{</span> <span class="c1">// Increment the saved channel if an external reset was triggered</span>
+    <span class="o">++</span><span class="n">resetCount</span><span class="p">;</span>
+    <span class="n">EEPROM</span><span class="p">.</span><span class="n">put</span><span class="p">(</span><span class="n">RESET_COUNT_ADDR</span><span class="p">,</span> <span class="n">resetCount</span><span class="p">);</span>
+  <span class="p">}</span>
+  
+  <span class="kt">uint8_t</span> <span class="n">channel</span> <span class="o">=</span> <span class="p">(</span><span class="n">resetCount</span> <span class="o">%</span> <span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span> <span class="c1">// i.e. 1, 2, or 3</span>
+  <span class="n">randomSeed</span><span class="p">(</span><span class="n">resetCount</span><span class="p">);</span> <span class="c1">// Seed RNG for picking Rolling ID</span>
+
+  <span class="n">dht</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span>
+  <span class="n">tx</span><span class="p">.</span><span class="n">begin</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="n">random</span><span class="p">(</span><span class="mi">256</span><span class="p">));</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">loop</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">digitalWrite</span><span class="p">(</span><span class="n">T0_XO_POWER_PIN</span><span class="p">,</span> <span class="n">HIGH</span><span class="p">);</span>
+  <span class="n">dht</span><span class="p">.</span><span class="n">powerOn</span><span class="p">();</span>
+
+  <span class="c1">// Sleep for 2 seconds to give the DHT22 and crystal oscillator a chance to wake up</span>
+  <span class="n">set_sleep_mode</span><span class="p">(</span><span class="n">SLEEP_MODE_PWR_DOWN</span><span class="p">);</span>
+  <span class="n">sleep_enable</span><span class="p">();</span>
+  <span class="n">WDTCR</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">WDIE</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">WDCE</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">WDE</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">WDP2</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">WDP1</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">WDP0</span><span class="p">);</span> <span class="c1">// Enable watchdog timer interrupt with 2 second countdown (see ATtiny85 datasheet, section 8.5)</span>
+  <span class="n">wdt_reset</span><span class="p">();</span> <span class="c1">// With the WDE bit set, too, WDIE is cleared when a timeout occurs, putting the watchdog in reset mode</span>
+  <span class="n">sleep_cpu</span><span class="p">();</span> <span class="c1">// So if something in the following sensor or tx code hangs for more than 2s, the watchdog will trigger a chip reset</span>
+  <span class="n">sleep_disable</span><span class="p">();</span>
+  
+  <span class="kt">float</span> <span class="n">t</span><span class="p">,</span> <span class="n">h</span><span class="p">;</span>
+  <span class="n">dht</span><span class="p">.</span><span class="n">read</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">h</span><span class="p">);</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="n">dht</span><span class="p">.</span><span class="n">irrationalReading</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">h</span><span class="p">))</span> <span class="p">{</span>
+    <span class="k">return</span><span class="p">;</span> <span class="c1">// Try again if we get a known bad reading</span>
+  <span class="p">}</span>
+  
+  <span class="n">dht</span><span class="p">.</span><span class="n">powerOff</span><span class="p">();</span>
+
+<span class="cp">#ifdef LOW_BATTERY
+</span>  <span class="n">tx</span><span class="p">.</span><span class="n">transmit</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">getVcc</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">LOW_BATTERY</span><span class="p">);</span>
+<span class="cp">#else
+</span>  <span class="n">tx</span><span class="p">.</span><span class="n">transmit</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">h</span><span class="p">);</span>
+<span class="cp">#endif
+</span>
+  <span class="n">digitalWrite</span><span class="p">(</span><span class="n">T0_XO_POWER_PIN</span><span class="p">,</span> <span class="n">LOW</span><span class="p">);</span>
+
+  <span class="c1">// Sleep for 8*5 = 40 seconds (8 seconds is the max for the watchdog timer prescaler)</span>
+  <span class="n">set_sleep_mode</span><span class="p">(</span><span class="n">SLEEP_MODE_PWR_DOWN</span><span class="p">);</span>
+  <span class="n">sleep_enable</span><span class="p">();</span>
+  <span class="n">wdt_disable</span><span class="p">();</span> <span class="c1">// Clear WDE to put watchdog timer back in interrupt-only mode</span>
+  <span class="n">WDTCR</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">WDIE</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">WDCE</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">WDP3</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">WDP0</span><span class="p">);</span>
+  <span class="n">wdt_reset</span><span class="p">();</span>
+  <span class="n">sleep_cpu</span><span class="p">();</span> <span class="c1">// This is probably overly cautious, but I'm not using a loop here</span>
+  <span class="n">sleep_cpu</span><span class="p">();</span> <span class="c1">// because if cosmic rays or something disrupted the counter, we</span>
+  <span class="n">sleep_cpu</span><span class="p">();</span> <span class="c1">// could be sleeping for a very long time, since the watchdog timer </span>
+  <span class="n">sleep_cpu</span><span class="p">();</span> <span class="c1">// reset is disabled at this point</span>
+  <span class="n">sleep_cpu</span><span class="p">();</span>
+  <span class="n">sleep_disable</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="n">ISR</span><span class="p">(</span><span class="n">WDT_vect</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// Interrupt handler for watchdog timer</span>
+  <span class="c1">// Do nothing; just return control flow to where it was before sleeping</span>
+<span class="p">}</span>
+
+<span class="kt">long</span> <span class="nf">getVcc</span><span class="p">()</span> <span class="p">{</span>
+  <span class="kt">uint8_t</span> <span class="n">_ADCSRA</span> <span class="o">=</span> <span class="n">ADCSRA</span><span class="p">;</span>
+  
+  <span class="n">ADCSRA</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">ADEN</span><span class="p">);</span> <span class="c1">// Enable ADC</span>
+  <span class="n">ADMUX</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">MUX3</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">MUX2</span><span class="p">);</span> <span class="c1">// Vcc as voltage reference; 1.1V bandgap voltage as measurement target</span>
+  
+  <span class="n">delay</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span> <span class="c1">// Allow ADC to settle after switching to internal voltage reference (as per datasheet)</span>
+  
+  <span class="n">ADCSRA</span> <span class="o">|=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">ADSC</span><span class="p">);</span> <span class="c1">// Start conversion</span>
+  <span class="k">while</span> <span class="p">(</span><span class="n">ADCSRA</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">ADSC</span><span class="p">));</span>
+ 
+  <span class="kt">uint8_t</span> <span class="n">adcl</span>  <span class="o">=</span> <span class="n">ADCL</span><span class="p">;</span>
+  <span class="kt">uint8_t</span> <span class="n">adch</span> <span class="o">=</span> <span class="n">ADCH</span><span class="p">;</span>
+  
+  <span class="kt">uint16_t</span> <span class="n">result</span> <span class="o">=</span> <span class="p">(</span><span class="n">adch</span> <span class="o">&lt;&lt;</span> <span class="mi">8</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">adcl</span> <span class="o">&lt;&lt;</span> <span class="mi">0</span><span class="p">);</span> <span class="c1">// result is 10 bits (max 1023)</span>
+
+  <span class="n">ADCSRA</span> <span class="o">=</span> <span class="n">_ADCSRA</span><span class="p">;</span>
+  
+  <span class="k">return</span> <span class="mi">1125300L</span> <span class="o">/</span> <span class="n">result</span><span class="p">;</span> <span class="c1">// Vcc in mV (1.1 * 1023 * 1000 = 1125300)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="dhtwrapperh">DHTWrapper.h</h2>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/*
+ * A fairly dumb wrapper for DHT.h that adds handling for powering a DHT22 sensor
+ * on and off via a separate power pin.
+
+ * More info here: https://shumphries.ca/blog/2023/01/03/oregon-scientific-attiny85
+ *
+ * LICENCE
+ *
+ * Copyright © 2023 Stephen Humphries
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */</span>
+ 
+<span class="cp">#ifndef DHTWRAPPER_H
+#define DHTWRAPPER_H
+</span>
+<span class="cp">#include</span> <span class="cpf">&lt;DHT.h&gt;</span><span class="c1"> // Adafruit's DHT sensor library (https://github.com/adafruit/DHT-sensor-library)</span><span class="cp">
+</span>
+<span class="cp">#define SENSOR_TYPE DHT22
+</span>
+<span class="k">class</span> <span class="nc">DHTWrapper</span> <span class="p">{</span>
+  <span class="nl">public:</span>
+  <span class="k">const</span> <span class="kt">uint8_t</span> <span class="n">dataPin</span><span class="p">;</span>
+  <span class="k">const</span> <span class="kt">uint8_t</span> <span class="n">powerPin</span><span class="p">;</span>
+  <span class="n">DHT</span> <span class="n">dht</span><span class="p">;</span>
+
+  <span class="n">DHTWrapper</span><span class="p">(</span><span class="kt">uint8_t</span> <span class="n">dataPin</span><span class="p">,</span>  <span class="kt">uint8_t</span> <span class="n">powerPin</span><span class="p">)</span><span class="o">:</span> <span class="n">dataPin</span><span class="p">(</span><span class="n">dataPin</span><span class="p">),</span> <span class="n">powerPin</span><span class="p">(</span><span class="n">powerPin</span><span class="p">),</span> <span class="n">dht</span><span class="p">(</span><span class="n">DHT</span><span class="p">(</span><span class="n">dataPin</span><span class="p">,</span> <span class="n">SENSOR_TYPE</span><span class="p">))</span> <span class="p">{}</span>
+
+  <span class="kt">void</span> <span class="n">begin</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">pinMode</span><span class="p">(</span><span class="n">powerPin</span><span class="p">,</span> <span class="n">OUTPUT</span><span class="p">);</span>
+    <span class="n">dht</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span> <span class="c1">// Must call this to set the initial pulltime value (see dht.h/dht.cpp)</span>
+    <span class="n">pinMode</span><span class="p">(</span><span class="n">dataPin</span><span class="p">,</span> <span class="n">OUTPUT</span><span class="p">);</span>
+    <span class="n">digitalWrite</span><span class="p">(</span><span class="n">dataPin</span><span class="p">,</span> <span class="n">LOW</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="kt">void</span> <span class="n">powerOn</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">digitalWrite</span><span class="p">(</span><span class="n">powerPin</span><span class="p">,</span> <span class="n">HIGH</span><span class="p">);</span>
+    <span class="c1">// DHT::read() takes care of setting the data pin to the correct state before reading</span>
+  <span class="p">}</span>
+
+  <span class="kt">void</span> <span class="n">powerOff</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">digitalWrite</span><span class="p">(</span><span class="n">powerPin</span><span class="p">,</span> <span class="n">LOW</span><span class="p">);</span>
+    
+    <span class="n">pinMode</span><span class="p">(</span><span class="n">dataPin</span><span class="p">,</span> <span class="n">OUTPUT</span><span class="p">);</span>
+    <span class="n">digitalWrite</span><span class="p">(</span><span class="n">dataPin</span><span class="p">,</span> <span class="n">LOW</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="kt">void</span> <span class="n">read</span><span class="p">(</span><span class="kt">float</span> <span class="o">&amp;</span><span class="n">t</span><span class="p">,</span> <span class="kt">float</span> <span class="o">&amp;</span><span class="n">h</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Without force=true, the DHT library only communicates with the seonsor if the last reading was taken more than 2 seconds ago</span>
+    <span class="c1">// Since power off sleeping stops all the clocks, that 2 seconds would be counting actual CPU run time, which is not helpful for this application</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">dht</span><span class="p">.</span><span class="n">readTemperature</span><span class="p">(</span><span class="cm">/*fahrenheit*/</span><span class="nb">false</span><span class="p">,</span> <span class="cm">/*force*/</span><span class="nb">true</span><span class="p">);</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">dht</span><span class="p">.</span><span class="n">readHumidity</span><span class="p">(</span><span class="cm">/*force*/</span><span class="nb">false</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="kt">bool</span> <span class="n">irrationalReading</span><span class="p">(</span><span class="kt">float</span> <span class="n">t</span><span class="p">,</span> <span class="kt">float</span> <span class="n">h</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span>
+      <span class="p">(</span><span class="n">t</span> <span class="o">==</span> <span class="mf">0.0</span>   <span class="o">&amp;&amp;</span> <span class="n">h</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">||</span> <span class="c1">// Returned by DHT::read() when the reading times out; rare if the sensor is given long enough to power on, but still possible</span>
+      <span class="p">(</span><span class="n">t</span> <span class="o">==</span> <span class="mf">150.0</span> <span class="o">&amp;&amp;</span> <span class="n">h</span> <span class="o">==</span> <span class="mf">100.0</span><span class="p">)</span> <span class="o">||</span> <span class="c1">// My sensor seems to sometimes return irrational data pairs like this and the next one. Maybe it's a bad part ¯\_(ツ)_/¯</span>
+      <span class="p">(</span><span class="n">t</span> <span class="o">==</span> <span class="mf">50.0</span>  <span class="o">&amp;&amp;</span> <span class="n">h</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">)</span>
+    <span class="p">);</span>    
+  <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="cp">#endif </span><span class="cm">/* DHTWRAPPER_H */</span><span class="cp">
+</span></code></pre></div></div>
+
+<h2 id="os21txh">OS21Tx.h</h2>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/*
+ * A library for transmitting temperature and humidity data via the Oregon Scientific v2.1 protocol.
+ * 
+ * Requires a 433.92 MHz transmitter connected to a digital pin and a 32 768 Hz crystal oscillator
+ * connected to T0 (PB2 on ATTiny85).
+ * 
+ * Assumes that an interrupt waking the CPU from sleep will occur 2 048 times per second. It should
+ * be straightforward to change how this interrupt is generated (e.g. to use an oscillator with a
+ * different frequency) by modifying the configureTimer() and restoreTimer() functions below.
+
+ * More info here: https://shumphries.ca/blog/2023/01/03/oregon-scientific-attiny85
+ *
+ * LICENCE
+ *
+ * Copyright © 2023 Stephen Humphries
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */</span>
+
+<span class="cp">#ifndef OS21TX_H
+#define OS21TX_H
+</span>
+<span class="c1">// Example transmission data</span>
+<span class="c1">// - Bytes are transmitted in order, small nibble first</span>
+<span class="c1">// - Nibbles are transmitted LSB-first</span>
+<span class="c1">// - Nibble descritions in this example are large nibble first, to align with the byte-wise representation</span>
+<span class="c1">// - Sensor ID 1d20, Channel 1, Rolling ID bb, Battery low, Temperature 22.7°C, Humidity 30%</span>
+<span class="c1">// uint8_t data[] = {</span>
+<span class="c1">//   0xff, // Preamble (16 ones (transmitted as 32 bits, alternating 01))</span>
+<span class="c1">//   0xff, // Preamble</span>
+<span class="c1">//   0x1a, // Sensor ID (1d20) / Sync (0xa)</span>
+<span class="c1">//   0x2d, // Sensor ID</span>
+<span class="c1">//   0x20, // Channel (1=0x1, 2=0x2, 3=0x4) / Sensor ID</span>
+<span class="c1">//   0xbb, // Rolling ID (randomly generated on startup)</span>
+<span class="c1">//   0x7c, // Temperature, 10^-1 / Battery low (low is 0x4, not low is 0x0, but both are often OR'd with a 0x8 bit of unknown significance)</span>
+<span class="c1">//   0x22, // Temperature, 10^1 / Temperature, 10^0</span>
+<span class="c1">//   0x00, // Humidity, 10^0 / Temperature sign (largest 2 bits, 0x0 for +ve, 0x8 for -ve) | Temperature 10^2 (smallest 2 bits)</span>
+<span class="c1">//   0x83, // Unknown / Humidity, 10^1</span>
+<span class="c1">//   0x4a, // Checksum (simple sum)</span>
+<span class="c1">//   0x55, // Postamble (CRC checksum)</span>
+<span class="c1">// };</span>
+
+<span class="cp">#define SUM_MASK 0xfffe0 // Only some nibbles are included in the checksum and CRC calculations
+#define CRC_MASK 0xff3e0
+#define CRC_IV 0x42 // ¯\_(ツ)_/¯ (see the blog post for details)
+#define CRC_POLY 0x7 // CRC-8-CCITT
+</span>
+<span class="cp">#define DATA_LEN 12
+</span>
+<span class="cp">#include</span> <span class="cpf">&lt;avr/sleep.h&gt;</span><span class="cp">
+</span>
+<span class="k">class</span> <span class="nc">OS21Tx</span> <span class="p">{</span>
+  <span class="nl">public:</span>
+  <span class="k">const</span> <span class="kt">uint8_t</span> <span class="n">pin</span><span class="p">;</span>
+
+  <span class="n">OS21Tx</span><span class="p">(</span><span class="kt">uint8_t</span> <span class="n">pin</span><span class="p">)</span><span class="o">:</span> <span class="n">pin</span><span class="p">(</span><span class="n">pin</span><span class="p">)</span> <span class="p">{}</span>
+
+  <span class="kt">void</span> <span class="n">begin</span><span class="p">(</span><span class="kt">uint8_t</span> <span class="n">channel</span><span class="p">,</span> <span class="kt">uint8_t</span> <span class="n">rollingId</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">pinMode</span><span class="p">(</span><span class="n">pin</span><span class="p">,</span> <span class="n">OUTPUT</span><span class="p">);</span>
+
+    <span class="n">setRollingId</span><span class="p">(</span><span class="n">rollingId</span><span class="p">);</span>
+    <span class="n">setChannel</span><span class="p">(</span><span class="n">channel</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="kt">void</span> <span class="n">transmit</span><span class="p">(</span><span class="kt">float</span> <span class="n">temperature</span><span class="p">,</span> <span class="kt">float</span> <span class="n">humidity</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">lowBattery</span> <span class="o">=</span> <span class="nb">false</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">setTemperature</span><span class="p">(</span><span class="n">temperature</span><span class="p">);</span>
+    <span class="n">setHumidity</span><span class="p">(</span><span class="n">humidity</span><span class="p">);</span>
+    <span class="n">setLowBattery</span><span class="p">(</span><span class="n">lowBattery</span><span class="p">);</span>
+    <span class="n">setChecksum</span><span class="p">();</span>
+    <span class="n">setCRC</span><span class="p">();</span>
+
+    <span class="n">sendData</span><span class="p">();</span> <span class="c1">// Send the message twice</span>
+    <span class="n">delay</span><span class="p">(</span><span class="mi">55</span><span class="p">);</span> <span class="c1">// Pause for a short time between transmissions</span>
+    <span class="n">sendData</span><span class="p">();</span>
+  <span class="p">}</span>
+
+  <span class="nl">private:</span>
+
+  <span class="kt">uint8_t</span> <span class="n">old_TCCR0A</span><span class="p">;</span>
+  <span class="kt">uint8_t</span> <span class="n">old_TCCR0B</span><span class="p">;</span>
+  <span class="kt">uint8_t</span> <span class="n">old_OCR0A</span><span class="p">;</span>
+  <span class="kt">uint8_t</span> <span class="n">old_TIMSK</span><span class="p">;</span>
+
+  <span class="kt">uint8_t</span> <span class="n">data</span><span class="p">[</span><span class="n">DATA_LEN</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="c1">// Data frame, initialized with the parts that never change</span>
+    <span class="mh">0xff</span><span class="p">,</span>            <span class="c1">// Preamble</span>
+    <span class="mh">0xff</span><span class="p">,</span>
+    <span class="mh">0x1a</span><span class="p">,</span>            <span class="c1">// Sync nibble and sensor ID</span>
+    <span class="mh">0x2d</span><span class="p">,</span>
+    <span class="mh">0x00</span><span class="p">,</span>
+    <span class="mh">0x00</span><span class="p">,</span>
+    <span class="mh">0x08</span><span class="p">,</span>            <span class="c1">// Unknown</span>
+    <span class="mh">0x00</span><span class="p">,</span>
+    <span class="mh">0x00</span><span class="p">,</span>
+    <span class="mh">0x80</span><span class="p">,</span>            <span class="c1">// Unknown</span>
+    <span class="mh">0x00</span><span class="p">,</span>
+    <span class="mh">0x00</span><span class="p">,</span>
+  <span class="p">};</span>
+
+  <span class="kt">void</span> <span class="n">setRollingId</span><span class="p">(</span><span class="kt">uint8_t</span> <span class="n">rollingId</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">data</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">&amp;=</span> <span class="mh">0x00</span><span class="p">;</span> <span class="n">data</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">|=</span> <span class="p">(</span><span class="n">rollingId</span> <span class="o">&amp;</span> <span class="mh">0xff</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="kt">void</span> <span class="n">setChannel</span><span class="p">(</span><span class="kt">uint8_t</span> <span class="n">channel</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">const</span> <span class="kt">uint8_t</span> <span class="n">channelCode</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">channel</span> <span class="o">-</span> <span class="mi">1</span><span class="p">));</span> <span class="c1">// 1=0x1, 2=0x2, 3=0x4</span>
+    <span class="n">data</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">&amp;=</span> <span class="mh">0x0f</span><span class="p">;</span> <span class="n">data</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">|=</span> <span class="p">((</span><span class="n">channelCode</span> <span class="o">&lt;&lt;</span> <span class="mi">4</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xf0</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="kt">void</span> <span class="n">setTemperature</span><span class="p">(</span><span class="kt">float</span> <span class="n">t</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">const</span> <span class="kt">uint8_t</span> <span class="n">t_sign</span> <span class="o">=</span> <span class="n">t</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">const</span> <span class="kt">uint8_t</span> <span class="n">t_deci</span> <span class="o">=</span> <span class="p">((</span><span class="kt">int</span><span class="p">)(</span><span class="n">t</span> <span class="o">*</span> <span class="p">(</span><span class="n">t_sign</span> <span class="o">?</span> <span class="o">-</span><span class="mi">10</span> <span class="o">:</span> <span class="mi">10</span><span class="p">))</span> <span class="o">/</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">10</span><span class="p">;</span>
+    <span class="k">const</span> <span class="kt">uint8_t</span> <span class="n">t_ones</span> <span class="o">=</span> <span class="p">((</span><span class="kt">int</span><span class="p">)(</span><span class="n">t</span> <span class="o">*</span> <span class="p">(</span><span class="n">t_sign</span> <span class="o">?</span> <span class="o">-</span><span class="mi">10</span> <span class="o">:</span> <span class="mi">10</span><span class="p">))</span> <span class="o">/</span> <span class="mi">10</span><span class="p">)</span> <span class="o">%</span> <span class="mi">10</span><span class="p">;</span>
+    <span class="k">const</span> <span class="kt">uint8_t</span> <span class="n">t_tens</span> <span class="o">=</span> <span class="p">((</span><span class="kt">int</span><span class="p">)(</span><span class="n">t</span> <span class="o">*</span> <span class="p">(</span><span class="n">t_sign</span> <span class="o">?</span> <span class="o">-</span><span class="mi">10</span> <span class="o">:</span> <span class="mi">10</span><span class="p">))</span> <span class="o">/</span> <span class="mi">100</span><span class="p">)</span> <span class="o">%</span> <span class="mi">10</span><span class="p">;</span>
+    <span class="k">const</span> <span class="kt">uint8_t</span> <span class="n">t_huns</span> <span class="o">=</span> <span class="p">((</span><span class="kt">int</span><span class="p">)(</span><span class="n">t</span> <span class="o">*</span> <span class="p">(</span><span class="n">t_sign</span> <span class="o">?</span> <span class="o">-</span><span class="mi">10</span> <span class="o">:</span> <span class="mi">10</span><span class="p">))</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">%</span> <span class="mi">10</span><span class="p">;</span>
+
+    <span class="n">data</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span> <span class="o">&amp;=</span> <span class="mh">0x0f</span><span class="p">;</span> <span class="n">data</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span> <span class="o">|=</span> <span class="p">((</span><span class="n">t_deci</span> <span class="o">&lt;&lt;</span> <span class="mi">4</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xf0</span><span class="p">);</span>
+    <span class="n">data</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span> <span class="o">&amp;=</span> <span class="mh">0xf0</span><span class="p">;</span> <span class="n">data</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span> <span class="o">|=</span> <span class="p">((</span><span class="n">t_ones</span> <span class="o">&lt;&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0x0f</span><span class="p">);</span>
+    <span class="n">data</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span> <span class="o">&amp;=</span> <span class="mh">0x0f</span><span class="p">;</span> <span class="n">data</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span> <span class="o">|=</span> <span class="p">((</span><span class="n">t_tens</span> <span class="o">&lt;&lt;</span> <span class="mi">4</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xf0</span><span class="p">);</span>
+    <span class="n">data</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span> <span class="o">&amp;=</span> <span class="mh">0xfc</span><span class="p">;</span> <span class="n">data</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span> <span class="o">|=</span> <span class="p">((</span><span class="n">t_huns</span> <span class="o">&lt;&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0x03</span><span class="p">);</span>
+    <span class="n">data</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span> <span class="o">&amp;=</span> <span class="mh">0xf3</span><span class="p">;</span> <span class="n">data</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span> <span class="o">|=</span> <span class="p">((</span><span class="n">t_sign</span> <span class="o">&lt;&lt;</span> <span class="mi">3</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0x0c</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="kt">void</span> <span class="n">setHumidity</span><span class="p">(</span><span class="kt">float</span> <span class="n">h</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">h</span> <span class="o">+=</span> <span class="mf">0.5</span><span class="p">;</span> <span class="c1">// Round to the nearest one by adding 0.5 then truncating the decimal</span>
+    
+    <span class="k">const</span> <span class="kt">uint8_t</span> <span class="n">h_ones</span> <span class="o">=</span> <span class="p">((</span><span class="kt">int</span><span class="p">)(</span><span class="n">h</span> <span class="o">*</span> <span class="mi">10</span><span class="p">)</span> <span class="o">/</span> <span class="mi">10</span><span class="p">)</span> <span class="o">%</span> <span class="mi">10</span><span class="p">;</span>
+    <span class="k">const</span> <span class="kt">uint8_t</span> <span class="n">h_tens</span> <span class="o">=</span> <span class="p">((</span><span class="kt">int</span><span class="p">)(</span><span class="n">h</span> <span class="o">*</span> <span class="mi">10</span><span class="p">)</span> <span class="o">/</span> <span class="mi">100</span><span class="p">)</span> <span class="o">%</span> <span class="mi">10</span><span class="p">;</span>
+  
+    <span class="n">data</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span> <span class="o">&amp;=</span> <span class="mh">0x0f</span><span class="p">;</span> <span class="n">data</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span> <span class="o">|=</span> <span class="p">((</span><span class="n">h_ones</span> <span class="o">&lt;&lt;</span> <span class="mi">4</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xf0</span><span class="p">);</span>
+    <span class="n">data</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span> <span class="o">&amp;=</span> <span class="mh">0xf0</span><span class="p">;</span> <span class="n">data</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span> <span class="o">|=</span> <span class="p">((</span><span class="n">h_tens</span> <span class="o">&lt;&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0x0f</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="kt">void</span> <span class="n">setLowBattery</span><span class="p">(</span><span class="kt">bool</span> <span class="n">b</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">data</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span> <span class="o">&amp;=</span> <span class="mh">0xf8</span><span class="p">;</span> <span class="n">data</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span> <span class="o">|=</span> <span class="p">(</span><span class="n">b</span> <span class="o">?</span> <span class="mh">0x4</span> <span class="o">:</span> <span class="mh">0x0</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="kt">void</span> <span class="n">setChecksum</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">data</span><span class="p">[</span><span class="mi">10</span><span class="p">]</span> <span class="o">&amp;=</span> <span class="mh">0x00</span><span class="p">;</span> <span class="n">data</span><span class="p">[</span><span class="mi">10</span><span class="p">]</span> <span class="o">|=</span> <span class="p">(</span><span class="n">checksumSimple</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">SUM_MASK</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xff</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="kt">void</span> <span class="n">setCRC</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">data</span><span class="p">[</span><span class="mi">11</span><span class="p">]</span> <span class="o">&amp;=</span> <span class="mh">0x00</span><span class="p">;</span> <span class="n">data</span><span class="p">[</span><span class="mi">11</span><span class="p">]</span> <span class="o">|=</span> <span class="p">(</span><span class="n">checksumCRC</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">CRC_MASK</span><span class="p">,</span> <span class="n">CRC_IV</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xff</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="kt">void</span> <span class="n">sendData</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">configureTimer</span><span class="p">();</span>
+    
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">DATA_LEN</span> <span class="o">*</span> <span class="mi">8</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span> <span class="c1">// Bits are transmitted LSB-first</span>
+      <span class="n">sendBit</span><span class="p">((</span><span class="n">data</span><span class="p">[</span><span class="n">i</span> <span class="o">/</span> <span class="mi">8</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="p">(</span><span class="n">i</span> <span class="o">%</span> <span class="mi">8</span><span class="p">))</span> <span class="o">&amp;</span> <span class="mh">0x1</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="n">writeSyncBit</span><span class="p">(</span><span class="n">LOW</span><span class="p">);</span> <span class="c1">// Don't leave the transmitter on!</span>
+
+    <span class="n">restoreTimer</span><span class="p">();</span>
+  <span class="p">}</span>
+
+  <span class="kt">void</span> <span class="n">sendBit</span><span class="p">(</span><span class="kt">bool</span> <span class="n">val</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">sendZero</span><span class="p">();</span> <span class="c1">// Recall that each bit is sent twice, inverted first</span>
+      <span class="n">sendOne</span><span class="p">();</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>        
+      <span class="n">sendOne</span><span class="p">();</span>
+      <span class="n">sendZero</span><span class="p">();</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+
+  <span class="kt">void</span> <span class="n">sendZero</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">writeSyncBit</span><span class="p">(</span><span class="n">LOW</span><span class="p">);</span>
+    <span class="n">writeSyncBit</span><span class="p">(</span><span class="n">HIGH</span><span class="p">);</span>
+  <span class="p">}</span>
+  
+  <span class="kt">void</span> <span class="n">sendOne</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">writeSyncBit</span><span class="p">(</span><span class="n">HIGH</span><span class="p">);</span>
+    <span class="n">writeSyncBit</span><span class="p">(</span><span class="n">LOW</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="k">static</span> <span class="kt">uint8_t</span> <span class="n">checksumSimple</span><span class="p">(</span><span class="k">const</span> <span class="kt">uint8_t</span> <span class="n">data</span><span class="p">[],</span> <span class="kt">uint64_t</span> <span class="n">mask</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">uint16_t</span> <span class="n">s</span> <span class="o">=</span> <span class="mh">0x0000</span><span class="p">;</span>
+  
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">64</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">((</span><span class="n">mask</span> <span class="o">&gt;&gt;</span> <span class="n">i</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0x1</span><span class="p">))</span> <span class="k">continue</span><span class="p">;</span> <span class="c1">// Skip nibbles that aren't set in the mask</span>
+  
+      <span class="n">s</span> <span class="o">+=</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span> <span class="o">/</span> <span class="mi">2</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="p">((</span><span class="n">i</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="mi">4</span><span class="p">))</span> <span class="o">&amp;</span> <span class="mh">0xf</span><span class="p">;</span> <span class="c1">// Sum data nibble by nibble</span>
+      <span class="n">s</span> <span class="o">+=</span> <span class="p">(</span><span class="n">s</span> <span class="o">&gt;&gt;</span> <span class="mi">8</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0x1</span><span class="p">;</span> <span class="c1">// Add any overflow back into the sum</span>
+      <span class="n">s</span> <span class="o">&amp;=</span> <span class="mh">0xff</span><span class="p">;</span>
+    <span class="p">}</span>
+  
+    <span class="k">return</span> <span class="n">s</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  
+  <span class="k">static</span> <span class="kt">uint8_t</span> <span class="n">checksumCRC</span><span class="p">(</span><span class="k">const</span> <span class="kt">uint8_t</span> <span class="n">data</span><span class="p">[],</span> <span class="kt">uint64_t</span> <span class="n">mask</span><span class="p">,</span> <span class="kt">uint8_t</span> <span class="n">iv</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">uint16_t</span> <span class="n">s</span> <span class="o">=</span> <span class="n">iv</span><span class="p">;</span>
+  
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">64</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">((</span><span class="n">mask</span> <span class="o">&gt;&gt;</span> <span class="n">i</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0x1</span><span class="p">))</span> <span class="k">continue</span><span class="p">;</span> <span class="c1">// Skip nibbles that aren't set in the mask</span>
+  
+      <span class="kt">uint8_t</span> <span class="n">nibble</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span> <span class="o">/</span> <span class="mi">2</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="p">((</span><span class="n">i</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="mi">4</span><span class="p">))</span> <span class="o">&amp;</span> <span class="mh">0xf</span><span class="p">;</span>
+  
+      <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">3</span><span class="p">;</span> <span class="n">j</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">;</span> <span class="o">--</span><span class="n">j</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kt">uint8_t</span> <span class="n">bit</span> <span class="o">=</span> <span class="p">(</span><span class="n">nibble</span> <span class="o">&gt;&gt;</span> <span class="n">j</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0x1</span><span class="p">;</span>
+  
+        <span class="n">s</span> <span class="o">&lt;&lt;=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="n">s</span> <span class="o">|=</span> <span class="n">bit</span><span class="p">;</span>
+  
+        <span class="k">if</span> <span class="p">(</span><span class="n">s</span> <span class="o">&amp;</span> <span class="mh">0x100</span><span class="p">)</span> <span class="p">{</span>
+          <span class="n">s</span> <span class="o">^=</span> <span class="n">CRC_POLY</span><span class="p">;</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">8</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">s</span> <span class="o">&lt;&lt;=</span> <span class="mi">1</span><span class="p">;</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">s</span> <span class="o">&amp;</span> <span class="mh">0x100</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">s</span> <span class="o">^=</span> <span class="n">CRC_POLY</span><span class="p">;</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  
+    <span class="k">return</span> <span class="n">s</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="kt">void</span> <span class="n">writeSyncBit</span><span class="p">(</span><span class="kt">bool</span> <span class="n">val</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Synchronise writes to the 2048 Hz timer by sleeping until the timer interrupt</span>
+    <span class="c1">// This works so long as there's less than 488 us worth of computation between write calls</span>
+    <span class="n">sleep_cpu</span><span class="p">();</span> <span class="c1">// Sleep right before a pin change (rather than after) to ensure all edges are identically spaced</span>
+    <span class="n">digitalWrite</span><span class="p">(</span><span class="n">pin</span><span class="p">,</span> <span class="n">val</span><span class="p">);</span> 
+  <span class="p">}</span>
+
+  <span class="kt">void</span> <span class="n">configureTimer</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">old_TCCR0A</span> <span class="o">=</span> <span class="n">TCCR0A</span><span class="p">;</span> <span class="c1">// Save and restore Timer0 config since it's used by Arduino for delay()</span>
+    <span class="n">old_TCCR0B</span> <span class="o">=</span> <span class="n">TCCR0B</span><span class="p">;</span>
+    <span class="n">old_OCR0A</span> <span class="o">=</span> <span class="n">OCR0A</span><span class="p">;</span>
+    <span class="n">old_TIMSK</span> <span class="o">=</span> <span class="n">TIMSK</span><span class="p">;</span>
+
+    <span class="n">cli</span><span class="p">();</span>
+    <span class="n">TCCR0A</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">WGM01</span><span class="p">);</span> <span class="c1">// CTC (Clear Timer on Compare Match)</span>
+    <span class="n">TCCR0B</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">CS02</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">CS01</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">CS00</span><span class="p">);</span> <span class="c1">// External clock source on T0 pin</span>
+    <span class="n">OCR0A</span> <span class="o">=</span> <span class="mh">0xf</span><span class="p">;</span> <span class="c1">// Output compare register (32 768 Hz / 16 = 2 048 Hz)</span>
+    <span class="n">TIMSK</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">OCIE0A</span><span class="p">);</span> <span class="c1">// Interrupt on output compare match</span>
+    <span class="n">sei</span><span class="p">();</span>
+
+    <span class="n">set_sleep_mode</span><span class="p">(</span><span class="n">SLEEP_MODE_IDLE</span><span class="p">);</span>
+    <span class="n">sleep_enable</span><span class="p">();</span>
+  <span class="p">}</span>
+
+  <span class="kt">void</span> <span class="n">restoreTimer</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">sleep_disable</span><span class="p">();</span>
+  
+    <span class="n">cli</span><span class="p">();</span>
+    <span class="n">TCCR0A</span> <span class="o">=</span> <span class="n">old_TCCR0A</span><span class="p">;</span>
+    <span class="n">TCCR0B</span> <span class="o">=</span> <span class="n">old_TCCR0B</span><span class="p">;</span>
+    <span class="n">OCR0A</span> <span class="o">=</span> <span class="n">old_OCR0A</span><span class="p">;</span>
+    <span class="n">TIMSK</span> <span class="o">=</span> <span class="n">old_TIMSK</span><span class="p">;</span>
+    <span class="n">sei</span><span class="p">();</span>
+  <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="n">ISR</span><span class="p">(</span><span class="n">TIMER0_COMPA_vect</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// Interrupt handler for TIMER0</span>
+  <span class="c1">// Do nothing; just return control flow to where it was before sleeping</span>
+<span class="p">}</span>
+
+<span class="cp">#endif </span><span class="cm">/* OS21TX_H */</span><span class="cp">
+</span></code></pre></div></div>
+
+</section>
+
+<div class="source-edit-history">
+  <a href="https://github.com/sjahu/sjahu.github.io/blob/main/blog/_posts/2023-01-03-oregon-scientific-attiny85.md?plain=1">Source</a>&nbsp;
+  <a href="https://github.com/sjahu/sjahu.github.io/edit/main/blog/_posts/2023-01-03-oregon-scientific-attiny85.md">Edit</a>&nbsp;
+  <a href="https://github.com/sjahu/sjahu.github.io/commits/main/blog/_posts/2023-01-03-oregon-scientific-attiny85.md">History</a>
+</div>
+
+    </div>
+
+    <div id="default-footer">
+      
+      <footer>
+        <div><small>Copyright &copy; 2023 Stephen Humphries</small></div>
+        <div><small>PGP: 6CF3&nbsp;3595&nbsp;1E54&nbsp;1ED2&nbsp;3C66&nbsp;1444&nbsp;CEDA&nbsp;0AA8&nbsp;3DE2&nbsp;A2CB</small></div>
+      </footer>
+      
+    </div>
+  </div>
+</body>
+
+</html>

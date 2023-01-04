@@ -5,10 +5,18 @@
     <atom:link href="https://shumphries.ca/blog/feed.xml" rel="self" type="application/rss+xml"/>
     <description></description>
     <language>en-CA</language>
-    <copyright>Copyright &#169; 2022 Stephen Humphries</copyright>
-    <pubDate>Sun, 04 Dec 2022 00:00:00 -0500</pubDate>
-    <lastBuildDate>Sun, 04 Dec 2022 00:00:00 -0500</lastBuildDate>
+    <copyright>Copyright &#169; 2023 Stephen Humphries</copyright>
+    <pubDate>Tue, 03 Jan 2023 00:00:00 -0500</pubDate>
+    <lastBuildDate>Tue, 03 Jan 2023 00:00:00 -0500</lastBuildDate>
     <docs>https://www.rssboard.org/rss-specification</docs>
+    
+    <item>
+        <title>ATtiny85-based Oregon Scientific v2.1 remote temperature sensor</title>
+        <link>https://shumphries.ca/blog/2023/01/03/oregon-scientific-attiny85</link>
+        <guid>https://shumphries.ca/blog/2023/01/03/oregon-scientific-attiny85</guid>
+        <description>In my last post, I showed off a prototype of my Arduino-based Oregon Scientific v2.1 sensor. It worked, but it wouldn’t be very practical for real use. Let’s take a look at building a more “production-ready” version. The following headers are in no particular order; a wiring schematic (if you can call it that) is near the bottom of the post, and so is the code.</description>
+        <pubDate>Tue, 03 Jan 2023 00:00:00 -0500</pubDate>
+    </item>
     
     <item>
         <title>Simulating an Oregon Scientific v2.1 remote temperature sensor</title>
