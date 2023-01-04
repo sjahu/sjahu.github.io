@@ -2,12 +2,12 @@
 title: "ATtiny85-based Oregon Scientific v2.1 remote temperature sensor"
 ---
 
-In my [last post](/blog/2022/12/04/oregon-scientific), I showed off a prototype of my Arduino-based Oregon Scientific v2.1 sensor. It worked, but it wouldn't be very practical for real use. Let's take a look at building a more "production-ready" version. The following headers are in no particular order; a wiring schematic (if you can call it that) is near the bottom of the post, and so is the code. 
+In my [last post](/blog/2022/12/04/oregon-scientific), I showed off a prototype of my Arduino-based Oregon Scientific v2.1 sensor. It worked, but it wouldn't be very practical for real use. Let's take a look at building a more "production-ready" version. The following headers are in no particular order; a wiring schematic (if you can call it that) is near the bottom of the post, and so is the code.
 
 # Bill of materials
 
 - [ATTINY85V-10PU](https://www.digikey.ca/en/products/detail/microchip-technology/ATTINY85V-10PU/735471)
-- [1" × 1" perfboard](https://www.digikey.ca/en/products/detail/sparkfun-electronics/PRT-08808/7387401)
+- [1″ × 1″ perfboard](https://www.digikey.ca/en/products/detail/sparkfun-electronics/PRT-08808/7387401)
 - [433 MHz transmitter](https://www.aliexpress.com/item/32980820915.html)
 - [DHT22 sensor](https://www.aliexpress.com/item/32523611214.html)
 - 2x [100 nF capacitor](https://www.amazon.ca/dp/B08DNF191P)
@@ -17,9 +17,9 @@ This comes out to about $10 CAD if you ignore my wasted shipping costs from plac
 
 # Microcontroller
 
-The Arduino-on-breadboard form factor, while great for prototyping, is too expensive (25 USD for an [Arduino Leonardo](https://store-usa.arduino.cc/products/arduino-leonardo-with-headers)), too large (2.7" × 2.1"), and too power-hungry (it draws ~20 mA at 3.3 V running an empty Arduino sketch at 16 MHz) to use for something as simple and portable as a temperature sensor.
+The Arduino-on-breadboard form factor, while great for prototyping, is too expensive (25 USD for an [Arduino Leonardo](https://store-usa.arduino.cc/products/arduino-leonardo-with-headers)), too large (2.7″ × 2.1″ just for the board itself), and too power-hungry (it draws ~20 mA at 3.3 V running an empty Arduino sketch at 16 MHz) to use for something as simple and portable as a temperature sensor.
 
-I chose an ATtiny85 microcontroller as the brain for version 2 of my sensor since it's compatible with the Arduino IDE but tiny (so accurately named!) and cheap. A 1" square perfboard provides a perfect platform for the 8 pin chip and the the few necessary peripherals.
+I chose an ATtiny85 microcontroller as the brain for version 2 of my sensor since it's compatible with the Arduino IDE and my existing code but tiny (so accurately named!) and cheap. A 1″ square perfboard provides a perfect platform for the 8 pin chip and the the few necessary peripherals.
 
 # Programming the ATtiny85
 
@@ -31,31 +31,31 @@ Flashing the firmware.
 
 # Power consumption
 
-Out of the box, an Arduino board running a naïvely written sketch can be impractical to run on battery power; assuming a capacity of 1200 mAh per AAA cell, a constant load of 20 mA (as quoted above for an empty sketch running on an Arduino Leonardo at 16 MHz and 3.3 V) would drain two cells in only about 5 days. Nick Gammon describes some ways to save power in microcontroller projects [here](http://www.gammon.com.au/power). Based on those tips, I made the following optimizations:
+Out of the box, an Arduino board running a naïvely written sketch can be impractical to run on battery power: assuming a capacity of 1200 mAh per AAA cell, a constant load of 20 mA (as quoted above for an empty sketch running on an Arduino Leonardo at 16 MHz and 3.3 V) would drain two cells in only about 5 days. Nick Gammon describes some ways to save power in microcontroller projects [here](http://www.gammon.com.au/power). Based on those tips, I chose to:
 
-- lose the development board and just use the microcontroller on its own,
+- lose the development board and just use a microcontroller on its own,
 - disable the Analog to Digital converter when not in use,
 - use as low a clock speed as possible,
 - power off peripherals (sensor, radio, oscillator) when not in use, and
-- don't busy-wait; use the microcontroller's power-off sleep mode whenever possible.
+- rarely busy-wait; use the microcontroller's power-off sleep mode whenever possible.
 
-I set the ATtiny to run at 8 MHz, instead of 16, which saves a significant amount of power when the CPU is running. The microcontroller's internal oscillator can also run at 1 MHz, but that's too slow to interface with the DHT22 sensor, at least with the library I was using.
+I configured the ATtiny to run at 8 MHz, instead of 16, which saves a significant amount of power when the CPU is running. The microcontroller's internal oscillator can also run at 1 MHz, but that's too slow to interface with the DHT22 sensor, at least with the library I was using.
 
-Powered on but not transmitting, the 433 MHz transmitter drew about 4.7 mA; transmitting, this jumped to 25.5 mA. The DHT22 drew about 170 µA at idle and a few mA when in use. The oscillator also drew a few µA when powered on. All of these would reduce battery life if they were powered on all the time, so I elected to switch them on only when necessary. Since each pin on the ATtiny can supply 40 mA, it's fine to drive the peripherals directly.
+Powered on but not transmitting, the 433 MHz transmitter draws about 4.7 mA; transmitting, this jumps to 25.5 mA. The DHT22 draws about 170 µA at idle and a few mA when in use. The oscillator also draws a few µA when powered on. All of these would reduce battery life if they were powered on all the time, so I elected to switch them on only when necessary. Since each pin on the ATtiny can supply 40 mA, it's fine to drive the peripherals directly.
 
-In power-off sleep with all the peripherals unpowered and the ADC disabled, I found that the ATtiny85 used about only about 4.4 µA at 3.3 V. This is basically a rounding error compared to the power usage when not sleeping: ~4 mA by the microcontroller itself when the processor is running for a fraction of a second, plus 25 mA for 0.2 seconds when transmitting (the signal takes about 0.2 seconds to send and we send it twice; given a 50% duty cycle that means the transmitter is powered for 0.2 seconds). Plugging those rough numbers into a calculation indicates that two AAAs should power the device for at least a year and a half.
+In power-off sleep with all the peripherals unpowered and the ADC disabled, I found that the ATtiny85 uses only about 4.4 µA at 3.3 V. This is basically a rounding error compared to the power usage when not sleeping: ~4 mA by the microcontroller itself when the processor is running for a fraction of a second, plus 25 mA for 0.2 seconds when transmitting (the signal takes about 0.2 seconds to send and we send it twice; given a 50% duty cycle that means the transmitter is powered for 0.2 seconds). Plugging those rough numbers into a calculation indicates that two AAAs should power the device for at least a year and a half.
 
 # Timing
 
-I mentioned in my previous post that the Oregon Scientific base station is very picky about timing-- if the timing of a transmission is off from 1024 Hz by more than about +/- 3 µs per cycle, the transmission will be ignored. That's a tolerance of about 0.3%, which I achieved in the prototype by calibrating the delay used to generate the output signal based on the signal's measured frequency. Unfortunately, the ATtiny85's internal [RC oscillator](https://en.wikipedia.org/wiki/RC_oscillator) is not particularly stable with respect to voltage or temperature, both of which will vary in this application as the battery wear and weather conditions change. According to the [datasheet](https://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-2586-AVR-8-bit-Microcontroller-ATtiny25-ATtiny45-ATtiny85_Datasheet.pdf) (which was an invaluable resource at every step of this build), the frequency can vary by nearly 4%, which is an order of magnitute more what would be acceptable. When I tested this by putting my ATtiny-based v2 prototype, which worked at room temperature, in the freezer, the base station quickly stopped receiving transmissions and the recordings that I captured on my laptop confirmed that the signal's frequency had dropped well out of spec.
+I mentioned in my previous post that the Oregon Scientific base station is very picky about timing-- if the average clock cycle length in a transmission is off by more than ±3 µs from the nominal length of ~976.5 µs, the transmission will be ignored. That's a tolerance of only about 0.3%, which I met in the prototype by calibrating the delay used to generate the output signal based on the signal's measured frequency. Unfortunately, the ATtiny85's internal [RC oscillator](https://en.wikipedia.org/wiki/RC_oscillator) is not particularly stable with respect to voltage or temperature, both of which will vary in this application as the battery wear and weather conditions change. According to the [datasheet](https://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-2586-AVR-8-bit-Microcontroller-ATtiny25-ATtiny45-ATtiny85_Datasheet.pdf) (which was an invaluable resource at every step of this build), the frequency can vary by nearly 4%, an order of magnitute more what would be acceptable. When I tested this by putting my ATtiny-based v2 prototype, which worked fine at room temperature, in the freezer, the base station quickly stopped receiving transmissions and the recordings that I captured on my laptop confirmed that the signal's frequency had dropped well out of spec.
 
 {% image /assets/images/blog/2023-01-03/datasheet_oscillator_frequency.png %}
 
-I toyed with the idea of trying to model the expected internal oscillator frequency based on the instantaneous measured temperature and voltage, but it seemed very unlikely that the results would be precise enough to be worth the effort. The consensus on AVRFreaks.net when somebody else [considered doing something similar](https://www.avrfreaks.net/s/topic/a5C3l000000UNwDEAW/t105811) was that, "unless your widget will be produced by ten of millions pieces a year", "do not fuck your brain ... connect a crystal to it". Sage advice. Instead, I ordered a 32 768 Hz crystal oscillator, guaranteed to be accurate to ±20 ppm (parts per million) at room temperature and up to an additional 150 ppm off at the extremes of -40°C to 90°C. That's an order of magnitude *better* than the receiver requires.
+I toyed with the idea of trying to model the expected internal oscillator frequency based on the instantaneous measured temperature and voltage, but it seemed very unlikely that the results would be precise enough to be worth the effort. The consensus on AVRFreaks.net when somebody else [considered doing something similar](https://www.avrfreaks.net/s/topic/a5C3l000000UNwDEAW/t105811) was that, "unless your widget will be produced by ten of millions pieces a year", "do not fuck your brain ... connect a crystal to it". Sage advice. Instead, I ordered a 32 768 Hz crystal oscillator, guaranteed to be accurate to ±20 ppm (parts per million) at room temperature and up to an additional 150 ppm off at the extremes of -40°C to 90°C. That's an order of magnitude tighter than the receiver requires. 🙌
 
-The ATtiny85 supports clocking the entire device with an external oscillator or crystal. In this case, however, I didn't care what frequency computations were performed at, which is why, instead of replacing the device clock source, I opted to use a crystal oscillator with a frequency divisible by 1024 Hz as the clock source only for Timer0, leaving the CPU to use the imprecise internal oscillator. I rewrote the signal generation code to use sleeps and interrupts (occurring every 16 ticks of the 32 768 Hz oscillator, i.e. at 2048 Hz) to generate the output signal. This resulted in an acceptable level of precision over the whole voltage and temperature range.
+The ATtiny85 supports clocking the entire device with an external oscillator or crystal. Higher-frequency crystals use more power, though, and, in this case, I don't care what frequency computations are performed at anyway. That's why, instead of replacing the device clock source, I opted to use a crystal oscillator with a frequency divisible by 2 × 1 024 Hz as the clock source only for Timer0, leaving the CPU to use the imprecise internal oscillator. I rewrote the signal generation code to use sleeps and interrupts (occurring every 16 ticks of the 32 768 Hz oscillator, i.e. at 2 048 Hz) to generate the output signal. This resulted in an acceptable level of precision over the whole voltage and temperature range.
 
-Aside: *why 32 768 Hz?*, you might ask. Well, 32 768 is divisible by 2048, so it's a suitable frequency for this particular task. Secondarily, 32 768 Hz crystal oscillators are extremely abundant and cheap because they're commonly used in real-time clock applications (like almost all digital watches)-- you can measure exactly 1 second using a 32 768 Hz oscillator and a 15-bit binary counter.
+Aside: *why 32 768 Hz?*, you might ask. Well, 32 768 is divisible by 2 048, so it's a suitable frequency for this particular task, which requires a 1 024 Hz output signal. Secondarily, 32 768 Hz crystal oscillators are extremely abundant and cheap because they're commonly used in real-time clock applications (like almost all digital watches)-- you can measure exactly 1 second using a 32 768 Hz oscillator and a 15-bit binary counter.
 
 The watch crystal worked well, but I misread the datasheet when ordering it and was unpleasantly surprised to find that it was only 2 mm² in area. This crumb-sized component proved very difficult to solder onto my perfboard; I ended up having to place it at an angle to get three of the pins touching solder pads, then use a glob of solder between the fourth pad and metal lid to establish the ground connection. If I ever build another one of these, I'll design a real PCB with properly spaced pads.
 
@@ -65,11 +65,11 @@ Zoom in.
 
 # Irrational temperature data
 
-I noticed that once in a while, particularly when testing it in the freezer, my DHT22 sensor returned irrational data: either 150°C/100% RH or 50°C/0% RH. I'm not sure why this happened; maybe it was just a bad part. The datasheet doesn't mention anything about these values, but I ordered the sensor from Aliexpress so who knows if it's even the real thing. Anyway, I added a check for these specific pairs that causes the program to leave the sensor powered on for a couple seconds then try again. This seemed to usually result in a successful reading.
+I noticed that once in a while, particularly when testing it in the freezer, my DHT22 sensor returns irrational data: either 150°C/100% RH or 50°C/0% RH. I'm not sure why this happens; maybe it's just a bad part. The datasheet doesn't mention anything about these values, but I ordered the sensor from Aliexpress so who knows if it's even the real thing. Anyway, I added a check for these specific pairs that causes the program to leave the sensor powered on for a couple seconds then try again. This seems to usually result in a successful reading.
 
 # Low-battery detection
 
-The v2.1 protocol supports a low-battery flag, which I didn't implement in the prototype. The ATtiny85 can use its Analog to Digital Converter to calculate its own supply voltage by setting the reference voltage for a comparison to Vcc and the measurement voltage to the internal 1.1 V reference. By inverting result, you can solve for Vcc.
+I didn't bother to implement in my earlier prototype, but the v2.1 protocol supports a low-battery flag. The ATtiny85 can use its Analog to Digital Converter to calculate its own supply voltage by setting the reference voltage for a comparison to Vcc and the measurement voltage to the internal 1.1 V reference. By inverting the result, you can solve for Vcc.
 
 If the calculated Vcc is lower than a certain threshold, the low-battery flag is set in the transmission.
 
@@ -77,7 +77,7 @@ If the calculated Vcc is lower than a certain threshold, the low-battery flag is
 
 The sensor can mark transmissions as channel 1, 2, or 3. I initially implemented some startup logic to read the channel setting from two input pins, but when I added the crystal oscillator I had to give those up. Instead, I made it so resetting the device via the external reset pin (which can be differentiated in software from a reset triggered by power-cycling the device) increments a value stored in the EEPROM, and this value is used to determine the channel number.
 
-The stored value is also used as the seed for the random number generator that picks the rolling ID. This means the behaviour of the sensor is slightly different from the factory one, in that the rolling ID only changes on reset and not on powering off/on. I find this to be an improvement, since the base station usually refurses to display a transmissios for a given channel if the rolling ID is different from the value in the previous transmission.
+The stored value is also used as the seed for the random number generator that picks the rolling ID. This means the behaviour of the sensor is slightly different from the factory one, in that the rolling ID only changes on reset and not on powering off/on. I find this to be an improvement, since the base station usually refuses to display subsequent transmissions on a given channel after the rolling ID changes.
 
 # Sleeping and waking using the watchdog timer
 
@@ -103,24 +103,24 @@ Does this count as a schematic?
 
 {% image /assets/images/blog/2023-01-03/bottom.jpg small %}
 
-All of the components I selected are pretty flexible in terms of what voltage they'll operate on. This circuit can be powered by two or three AAA or AA cells, depending on the desired battery life and signal power. A device reset/channel change can be triggered by using a metal screwdriver to briefly connect the reset pin and ground (i.e. the top-left-most two blobs in the last picture).
+All of the components I selected are pretty flexible in terms of what voltages they'll operate on. As a result, this circuit can be powered by either two or three AAA or AA cells, depending on the desired battery life and signal power. A device reset/channel change can be triggered by using a metal screwdriver to briefly connect the reset pin and ground (i.e. the top-left-most two blobs in the last picture).
 
 # Code
 
-Also hosted on GitHub, [here](https://github.com/sjahu/oregon-scientific). The code below is up-to-date only as of the initial commit in the linked repo.
+Also hosted on GitHub, [here](https://github.com/sjahu/OS21Tx). The code below is up-to-date only as of the initial commit in the linked repo.
 
-## sensor.ino
+### `sensor.ino`
 
-```cpp
+{% highlight c++ linenos %}
 /*
- * ATTiny85-based temperature/humidity sensor compatible with the Oregon Scientific v2.1
+ * ATtiny85-based temperature/humidity sensor compatible with the Oregon Scientific v2.1
  * 433.92 MHz weather sensor protocol.
  *
  * This sketch replicates the behaviour of the Oregon Scientific THGR122NX sensor.
- * 
+ *
  * Most of the pin assignments defined below are flexible; the only one that isn't is T0,
  * which must be connected to the external oscillator clocking Timer/Counter0. On the
- * ATTiny85, T0 is on PB2.
+ * ATtiny85, T0 is on PB2.
  *
  * More info here: https://shumphries.ca/blog/2023/01/03/oregon-scientific-attiny85
  *
@@ -187,7 +187,7 @@ void setup() {
     ++resetCount;
     EEPROM.put(RESET_COUNT_ADDR, resetCount);
   }
-  
+
   uint8_t channel = (resetCount % 3) + 1; // i.e. 1, 2, or 3
   randomSeed(resetCount); // Seed RNG for picking Rolling ID
 
@@ -206,14 +206,14 @@ void loop() {
   wdt_reset(); // With the WDE bit set, too, WDIE is cleared when a timeout occurs, putting the watchdog in reset mode
   sleep_cpu(); // So if something in the following sensor or tx code hangs for more than 2s, the watchdog will trigger a chip reset
   sleep_disable();
-  
+
   float t, h;
   dht.read(t, h);
 
   if (dht.irrationalReading(t, h)) {
     return; // Try again if we get a known bad reading
   }
-  
+
   dht.powerOff();
 
 #ifdef LOW_BATTERY
@@ -232,7 +232,7 @@ void loop() {
   wdt_reset();
   sleep_cpu(); // This is probably overly cautious, but I'm not using a loop here
   sleep_cpu(); // because if cosmic rays or something disrupted the counter, we
-  sleep_cpu(); // could be sleeping for a very long time, since the watchdog timer 
+  sleep_cpu(); // could be sleeping for a very long time, since the watchdog timer
   sleep_cpu(); // reset is disabled at this point
   sleep_cpu();
   sleep_disable();
@@ -245,29 +245,29 @@ ISR(WDT_vect) {
 
 long getVcc() {
   uint8_t _ADCSRA = ADCSRA;
-  
+
   ADCSRA = (1 << ADEN); // Enable ADC
   ADMUX = (1 << MUX3) | (1 << MUX2); // Vcc as voltage reference; 1.1V bandgap voltage as measurement target
-  
+
   delay(2); // Allow ADC to settle after switching to internal voltage reference (as per datasheet)
-  
+
   ADCSRA |= (1 << ADSC); // Start conversion
   while (ADCSRA & (1 << ADSC));
- 
+
   uint8_t adcl  = ADCL;
   uint8_t adch = ADCH;
-  
+
   uint16_t result = (adch << 8) | (adcl << 0); // result is 10 bits (max 1023)
 
   ADCSRA = _ADCSRA;
-  
+
   return 1125300L / result; // Vcc in mV (1.1 * 1023 * 1000 = 1125300)
 }
-```
+{% endhighlight %}
 
-## DHTWrapper.h
+### `DHTWrapper.h`
 
-```cpp
+{% highlight c++ linenos %}
 /*
  * A fairly dumb wrapper for DHT.h that adds handling for powering a DHT22 sensor
  * on and off via a separate power pin.
@@ -296,7 +296,7 @@ long getVcc() {
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
- 
+
 #ifndef DHTWRAPPER_H
 #define DHTWRAPPER_H
 
@@ -326,7 +326,7 @@ class DHTWrapper {
 
   void powerOff() {
     digitalWrite(powerPin, LOW);
-    
+
     pinMode(dataPin, OUTPUT);
     digitalWrite(dataPin, LOW);
   }
@@ -343,22 +343,22 @@ class DHTWrapper {
       (t == 0.0   && h == 0.0) || // Returned by DHT::read() when the reading times out; rare if the sensor is given long enough to power on, but still possible
       (t == 150.0 && h == 100.0) || // My sensor seems to sometimes return irrational data pairs like this and the next one. Maybe it's a bad part ¯\_(ツ)_/¯
       (t == 50.0  && h == 0.0)
-    );    
+    );
   }
 };
 
 #endif /* DHTWRAPPER_H */
-```
+{% endhighlight %}
 
-## OS21Tx.h
+### `OS21Tx.h`
 
-```cpp
+{% highlight c++ linenos %}
 /*
  * A library for transmitting temperature and humidity data via the Oregon Scientific v2.1 protocol.
- * 
+ *
  * Requires a 433.92 MHz transmitter connected to a digital pin and a 32 768 Hz crystal oscillator
- * connected to T0 (PB2 on ATTiny85).
- * 
+ * connected to T0 (PB2 on ATtiny85).
+ *
  * Assumes that an interrupt waking the CPU from sleep will occur 2 048 times per second. It should
  * be straightforward to change how this interrupt is generated (e.g. to use an oscillator with a
  * different frequency) by modifying the configureTimer() and restoreTimer() functions below.
@@ -492,10 +492,10 @@ class OS21Tx {
 
   void setHumidity(float h) {
     h += 0.5; // Round to the nearest one by adding 0.5 then truncating the decimal
-    
+
     const uint8_t h_ones = ((int)(h * 10) / 10) % 10;
     const uint8_t h_tens = ((int)(h * 10) / 100) % 10;
-  
+
     data[8] &= 0x0f; data[8] |= ((h_ones << 4) & 0xf0);
     data[9] &= 0xf0; data[9] |= ((h_tens << 0) & 0x0f);
   }
@@ -514,7 +514,7 @@ class OS21Tx {
 
   void sendData() {
     configureTimer();
-    
+
     for (int i = 0; i < DATA_LEN * 8; ++i) { // Bits are transmitted LSB-first
       sendBit((data[i / 8] >> (i % 8)) & 0x1);
     }
@@ -527,7 +527,7 @@ class OS21Tx {
     if (val) {
       sendZero(); // Recall that each bit is sent twice, inverted first
       sendOne();
-    } else {        
+    } else {
       sendOne();
       sendZero();
     }
@@ -537,7 +537,7 @@ class OS21Tx {
     writeSyncBit(LOW);
     writeSyncBit(HIGH);
   }
-  
+
   void sendOne() {
     writeSyncBit(HIGH);
     writeSyncBit(LOW);
@@ -545,46 +545,46 @@ class OS21Tx {
 
   static uint8_t checksumSimple(const uint8_t data[], uint64_t mask) {
     uint16_t s = 0x0000;
-  
+
     for (int i = 0; i < 64; ++i) {
       if (!((mask >> i) & 0x1)) continue; // Skip nibbles that aren't set in the mask
-  
+
       s += (data[i / 2] >> ((i % 2) * 4)) & 0xf; // Sum data nibble by nibble
       s += (s >> 8) & 0x1; // Add any overflow back into the sum
       s &= 0xff;
     }
-  
+
     return s;
   }
 
-  
+
   static uint8_t checksumCRC(const uint8_t data[], uint64_t mask, uint8_t iv) {
     uint16_t s = iv;
-  
+
     for (int i = 0; i < 64; ++i) {
       if (!((mask >> i) & 0x1)) continue; // Skip nibbles that aren't set in the mask
-  
+
       uint8_t nibble = (data[i / 2] >> ((i % 2) * 4)) & 0xf;
-  
+
       for (int j = 3; j >= 0; --j) {
         uint8_t bit = (nibble >> j) & 0x1;
-  
+
         s <<= 1;
         s |= bit;
-  
+
         if (s & 0x100) {
           s ^= CRC_POLY;
         }
       }
     }
-  
+
     for (int i = 0; i < 8; ++i) {
       s <<= 1;
       if (s & 0x100) {
         s ^= CRC_POLY;
       }
     }
-  
+
     return s;
   }
 
@@ -592,7 +592,7 @@ class OS21Tx {
     // Synchronise writes to the 2048 Hz timer by sleeping until the timer interrupt
     // This works so long as there's less than 488 us worth of computation between write calls
     sleep_cpu(); // Sleep right before a pin change (rather than after) to ensure all edges are identically spaced
-    digitalWrite(pin, val); 
+    digitalWrite(pin, val);
   }
 
   void configureTimer() {
@@ -614,7 +614,7 @@ class OS21Tx {
 
   void restoreTimer() {
     sleep_disable();
-  
+
     cli();
     TCCR0A = old_TCCR0A;
     TCCR0B = old_TCCR0B;
@@ -630,4 +630,4 @@ ISR(TIMER0_COMPA_vect) {
 }
 
 #endif /* OS21TX_H */
-```
+{% endhighlight %}
