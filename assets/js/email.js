@@ -17,7 +17,7 @@ let email = [
 ].join("");
 
 let a = document.querySelector("#email a");
-a.addEventListener("click", () => location.href = `mailto:${email}`);
+a.setAttribute("href", `mailto:${email}`);
 
 let style = document.createElement("style");
 style.textContent = `#email::before { content: " at "; }\n#email a::after { content: "${email}"; }`;
