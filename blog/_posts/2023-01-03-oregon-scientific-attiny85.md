@@ -85,7 +85,7 @@ The ATtiny85 supports various sleep modes, including power-down mode, which uses
 
 The [datasheet](https://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-2586-AVR-8-bit-Microcontroller-ATtiny25-ATtiny45-ATtiny85_Datasheet.pdf) has a lot of good information on using the watchdog timer; see also the code, below, for exactly how I implemented this.
 
-As a bonus safety feature, I configured the watchdog timer to trigger a rest (not an interrupt) if the code in the main loop (reading the sensor, generating the data, transmitting the signal) ever gets stuck.
+As a bonus safety feature, I configured the watchdog timer to trigger a reset (not an interrupt) if the code in the main loop (reading the sensor, generating the data, transmitting the signal) ever gets stuck.
 
 # Circuit assembly
 
