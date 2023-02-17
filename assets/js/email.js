@@ -16,9 +16,9 @@ let email = [
   "a",
 ].join("");
 
-let a = document.createElement("a");
-
+let a = document.querySelector("#email a");
 a.setAttribute("href", `mailto:${email}`);
-a.innerHTML = email;
 
-document.querySelector("#email").replaceWith(a);
+let style = document.createElement("style");
+style.textContent = `#email::before { content: " at "; }\n#email a::after { content: "${email}"; }`;
+document.head.append(style);
