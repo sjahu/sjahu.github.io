@@ -2,7 +2,7 @@
 layout: default
 ---
 
-<h1 class="post-title">{{ page.title }}</h1>
+<h1 class="post-title"><a href="{{ post.url }}">{{ page.title }}</a></h1>
 <div class="post-publish-date">Published {{ page.date | date: "%A, %B %d, %Y" }}</div>
 {% if page.header_image %}
 <figure class="post-header-image">
