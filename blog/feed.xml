@@ -6,9 +6,17 @@
     <description></description>
     <language>en-CA</language>
     <copyright>Copyright &#169; 2023 Stephen Humphries</copyright>
-    <pubDate>Wed, 15 Feb 2023 00:00:00 -0500</pubDate>
-    <lastBuildDate>Wed, 15 Feb 2023 00:00:00 -0500</lastBuildDate>
+    <pubDate>Wed, 18 Oct 2023 00:00:00 -0400</pubDate>
+    <lastBuildDate>Wed, 18 Oct 2023 00:00:00 -0400</lastBuildDate>
     <docs>https://www.rssboard.org/rss-specification</docs>
+    
+    <item>
+        <title>Electric kettle teardown</title>
+        <link>https://shumphries.ca/blog/2023/10/18/electric-kettle</link>
+        <guid>https://shumphries.ca/blog/2023/10/18/electric-kettle</guid>
+        <description>I retired my 8-year-old electric kettle the other day because, though it still boiled water, the auto-shutoff feature had begun to malfunction, often (but not always) causing it to continue to heat water long after it had reached 100 degrees. Besides that, the inside of the kettle had long been rusting, it sometimes leaked, and I had already had to jury-rig a fix for its broken lid-release button– it had served me well, but an upgrade was well justified.</description>
+        <pubDate>Wed, 18 Oct 2023 00:00:00 -0400</pubDate>
+    </item>
     
     <item>
         <title>Slack emoji everywhere</title>
