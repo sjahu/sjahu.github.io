@@ -106,14 +106,14 @@ void pollResetButton() {
 #define FLICKER_STEPS 8
 
 const uint32_t steps[FLICKER_STEPS] = {
-  10,
-  100,
-  200,
-  400,
-  800,
-  1600,
-  3200,
   6400,
+  3200,
+  1600,
+  800,
+  400,
+  200,
+  100,
+  10,
 };
 
 struct DEV_LedString : Service::LightBulb {
@@ -137,13 +137,17 @@ struct DEV_LedString : Service::LightBulb {
     
     this->power = new Characteristic::On(false, true);
     this->level = new Characteristic::Brightness(FLICKER_STEPS, true);
-    level->setRange(0, FLICKER_STEPS, 1);
+    level->setRange(0, 100, 1);
 
     switchLeds();
   }
 
   bool update() {
-    WEBLOG("Setting power to %s, level to %d", power->getNewVal() ? "ON" : "OFF", level->getNewVal());
+    if (power->getNewVal()) {
+      WEBLOG("Setting power to ON, level to %d", step(level->getNewVal()));
+    } else {
+      WEBLOG("Setting power to OFF");
+    }
     switchLeds();
     return true;
   }
@@ -168,8 +172,12 @@ struct DEV_LedString : Service::LightBulb {
     digitalWrite(pin1, ledMode);
     digitalWrite(pin2, !ledMode);
 
-    wait = steps[FLICKER_STEPS - level->getNewVal()];
+    wait = steps[step(level->getNewVal())];
     timer = millis();
+  }
+
+  uint32_t step(uint32_t percent) {
+    return (percent - 1) * FLICKER_STEPS / 100;
   }
 };
 {% endhighlight %}
