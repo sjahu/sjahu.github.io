@@ -27,9 +27,10 @@ exclude:
   - Gemfile
   - Gemfile.lock
   - node_modules
+  - README.md
+  - setup.sh
+  - util/
   - vendor/bundle/
   - vendor/cache/
   - vendor/gems/
   - vendor/ruby/
-  - README.md
-  - setup.sh
