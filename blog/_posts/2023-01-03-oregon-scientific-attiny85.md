@@ -69,7 +69,7 @@ I noticed that once in a while, particularly when testing it in the freezer, my 
 
 # Low-battery detection
 
-I didn't bother to implement in my earlier prototype, but the v2.1 protocol supports a low-battery flag. The ATtiny85 can use its Analog to Digital Converter to calculate its own supply voltage by setting the reference voltage for a comparison to Vcc and the measurement voltage to the internal 1.1 V reference. By inverting the result, you can solve for Vcc.
+I didn't bother to implement low-battery detection in my earlier prototype, but the v2.1 protocol does support a low-battery flag. The ATtiny85 can use its Analog to Digital Converter to calculate its own supply voltage by setting the reference voltage for a comparison to Vcc and the measurement voltage to the internal 1.1 V reference. By inverting the result, you can solve for Vcc.
 
 If the calculated Vcc is lower than a certain threshold, the low-battery flag is set in the transmission.
 
