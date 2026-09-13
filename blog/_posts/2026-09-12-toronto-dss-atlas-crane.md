@@ -63,3 +63,7 @@ Photo creds: me, 2026-09-12. The inscription pictured above was not restored, or
 This plaque attributes the design of the crane to J. H. Jones, one-time Harbour Commission Chief Engineer. 
 {% endfigure %}
 
+{% figure /assets/images/blog/2026-09-12/architecture-canada-dss-ad.jpg medium %}
+Dominion Structural Steel had a facility at 80 Commissioners St., just down the road from the E. L. Cousins docks. Note that <a href="https://archive.org/details/architecture-canada_1957-12_34_12/page/n33/mode/2up?q=%22Dominion+Structural+Steel%22">this 1957 ad</a> also uses the DSS mark.
+{% endfigure %}
+
