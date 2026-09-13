@@ -6,9 +6,17 @@
     <description></description>
     <language>en-CA</language>
     <copyright>Copyright &#169; 2026 Stephen Humphries</copyright>
-    <pubDate>Fri, 14 Nov 2025 00:00:00 -0500</pubDate>
-    <lastBuildDate>Fri, 14 Nov 2025 00:00:00 -0500</lastBuildDate>
+    <pubDate>Sat, 12 Sep 2026 00:00:00 -0400</pubDate>
+    <lastBuildDate>Sat, 12 Sep 2026 00:00:00 -0400</lastBuildDate>
     <docs>https://www.rssboard.org/rss-specification</docs>
+    
+    <item>
+        <title>Toronto's DSS Atlas Crane</title>
+        <link>https://shumphries.ca/blog/2026/09/12/toronto-dss-atlas-crane</link>
+        <guid>https://shumphries.ca/blog/2026/09/12/toronto-dss-atlas-crane</guid>
+        <description>This post can be filed under “obscure bits of information that should be easier to find”. TL;DR: DSS stands for Dominion Structural Steel.</description>
+        <pubDate>Sat, 12 Sep 2026 00:00:00 -0400</pubDate>
+    </item>
     
     <item>
         <title>TRETAKT Teardown</title>
