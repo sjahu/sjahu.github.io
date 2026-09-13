@@ -32,7 +32,7 @@ I had a pretty good hunch that the "D" stood for "Dominion", just on the basis t
 Robert Lafreniere <a href="https://www.flickr.com/photos/83724340@N05/14517062563/in/photolist-o7PJW8-2pNScC5/">on Flickr</a>.
 {% endfigure %}
 
-I took a break to make some lunch and, while I was doing that, figured I'd throw some ✨✨AI✨✨ at the problem, since it can read things and fan out web searches faster than I can. 20 minutes later, Claude had found the answer. I had told it my hunch about "Dominion", and it went down a rabbithole on a couple Dominion-named companies, including Dominion Structural Steel. It found records (all from archive.org, which is a good tip for to keep in mind for future research) showing the following:
+I took a break to make some lunch and, while I was doing that, figured I'd throw some ✨✨AI✨✨ at the problem, since it can read things and fan out web searches faster than I can. 20 minutes later, Claude had found the answer. I had told it my hunch about "Dominion", and it went down a rabbithole on a couple Dominion-named companies, including Dominion Structural Steel. It found records (all from archive.org, which is a good tip to keep in mind for future research) showing the following:
 
 
 1. By the mid '50s, Dominion Structural Steel was <a href="https://archive.org/details/sim_financial-post_1954-09-11_47_44/page/n29/mode/2up?q=%22Dominion+Structural+Steel%22">at least 95% owned</a> by Canada Iron Foundries.
