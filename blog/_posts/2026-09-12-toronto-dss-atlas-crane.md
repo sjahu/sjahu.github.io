@@ -4,7 +4,7 @@ title: Toronto's DSS Atlas Crane
 
 This post can be filed under "obscure bits of information that should be easier to find". **TL;DR: DSS stands for _Dominion Structural Steel_**.
 
-Earlier this week, I visited the newly opened western expansion of Toronto's [Biidaasige Park](https://www.waterfrontoronto.ca/our-projects/biidaasige-park). Looking up at the towering Atlas Crane (a monument to the waterfront's industrial past), I noticed the letters "DSS" subtlely displayed in white-on-white metal near the top. Out of curiosity, I tried to look up what this stood for, but couldn't find any reference to the letters. I forgot about it for a couple days but had some time to do some more in-depth research today.
+Earlier this week, I visited the newly opened western expansion of Toronto's [Biidaasige Park](https://www.waterfrontoronto.ca/our-projects/biidaasige-park). Looking up at the towering Atlas Crane (a monument to the waterfront's industrial past), I noticed the letters "DSS" subtly displayed in white-on-white metal near the top. Out of curiosity, I tried to look up what this stood for, but I couldn't find any reference to the letters. I forgot about it for a couple days but had some time to do some more in-depth research this weekend.
 
 {% figure /assets/images/blog/2026-09-12/dss-atlas-crane-1.jpg large %}
 Photo creds: me, 2026-09-12.
@@ -14,10 +14,10 @@ Photo creds: me, 2026-09-12.
 Photo creds: me, 2026-09-12.
 {% endfigure %}
 
-Initially, I wondered if the letters had something to do with the [recent restoration of the crane](https://www.waterfrontoronto.ca/news/meet-atlas-crane-unusual-park-feature-port-lands), during which it was sandblasted and repainted. Old photos, however, also show DSS in red lettering at the top of the crane, so I figured it was most likely the name of the owner or the manufacturer. (Waterfront Toronto's blog post on the restoration mentions "repainting heritage features like lettering".)
+Initially, I wondered if the letters had something to do with the [recent restoration of the crane](https://www.waterfrontoronto.ca/news/meet-atlas-crane-unusual-park-feature-port-lands), during which it was sandblasted and repainted. Old photos, however, show DSS in red lettering at the top of the crane, so I figured it was most likely the name of the owner or the manufacturer. (Waterfront Toronto's blog post on the restoration mentions "repainting heritage features like lettering".)
 
 {% figure /assets/images/blog/2026-09-12/biidaasige-construction-fog.jpg large %}
-Photo creds: me, 2024-05-26. "DSS" visible in red. Also, below that it appears to say "200 TON", which is weird. The restored lettering pictured in today's photos says "300 TON", and that's the correct figure. Maybe it's just not high enough res to make it out properly.
+Photo creds: me, 2024-05-26. "DSS" visible in red. Also, below that it appears to say "200 TON", which is weird. The restored lettering pictured in today's photos says "300 TON", and that's the correct figure. Maybe it's just not high enough resolution to make it out properly.
 {% endfigure %}
 
 {% figure /assets/images/blog/2026-09-12/atlas-crane-toronto-1999.jpg large %}
@@ -26,16 +26,16 @@ Photo creds: me, 2024-05-26. "DSS" visible in red. Also, below that it appears t
 
 I searched for all kinds of combinations of "toronto", "atlas", "crane", "dss", "manufacturer", "harbour", "marine terminal 35" (the name of the facility that housed the crane), etc and turned up nothing. I looked for the 2004 by-law that had designated the terminal and the crane as heritage structures, thinking it might outline the history, but I couldn't find it.
 
-I had a pretty good hunch that the "D" stood for "Dominion", just on the basis that many, many Canadian companies of the late 19th and 20th centuries were named "Dominion Such and Such". Some more keyword searching ("steel", "crane", "1961" (the year the crane's installation began)) turned up the name Dominion Structural Steel and this image of a truck crane with that name painted on the side, but according to the caption, that crane was made by Bay City Shovels, and presumably only operated by Dominion Structural Steel. The name was a good fit.
+I had a pretty good hunch that the "D" stood for "Dominion", just on the basis that many, many Canadian companies of the late 19th and early 20th centuries were named "Dominion Such and Such". Some more keyword searching ("steel", "crane", "1961" (the year the crane's installation began)) turned up the name Dominion Structural Steel and this image of a truck crane with that name painted on the side, but according to the caption, that crane was made by Bay City Shovels, and presumably only operated by Dominion Structural Steel. The name was a good fit, though.
 
 {% figure /assets/images/blog/2026-09-12/dss-truck-crane.jpg small %}
 Robert Lafreniere <a href="https://www.flickr.com/photos/83724340@N05/14517062563/in/photolist-o7PJW8-2pNScC5/">on Flickr</a>.
 {% endfigure %}
 
-I took a break to make some lunch and, while I was doing that, figured I'd throw some ✨✨AI✨✨ at the problem, since it can read things and fan out web searches faster than I can. 20 minutes later, Claude had found the answer. I had told it my hunch about "Dominion", and it went down a rabbithole on a couple Dominion-named companies, including Dominion Structural Steel. It found records (all from archive.org, which is a good tip for future research) showing the following:
+I took a break to make some lunch and, while I was doing that, figured I'd throw some ✨✨AI✨✨ at the problem, since it can read things and fan out web searches faster than I can. 20 minutes later, Claude had found the answer. I had told it my hunch about "Dominion", and it went down a rabbithole on a couple Dominion-named companies, including Dominion Structural Steel. It found records (all from archive.org, which is a good tip for to keep in mind for future research) showing the following:
 
 
-1. In the '50s, Dominion Structural Steel Limited. had been <a href="https://archive.org/details/sim_financial-post_1954-09-11_47_44/page/n29/mode/2up?q=%22Dominion+Structural+Steel%22">mostly acquired</a> by Canada Iron Foundries, Limited.
+1. By the mid '50s, Dominion Structural Steel was <a href="https://archive.org/details/sim_financial-post_1954-09-11_47_44/page/n29/mode/2up?q=%22Dominion+Structural+Steel%22">at least 95% owned</a> by Canada Iron Foundries.
 {% image /assets/images/blog/2026-09-12/dss-canada-iron.png medium %}
 
 2. Dominion Structural Steel <a href="https://archive.org/details/sim_saturday-night_1958-05-10_73_10/mode/2up?q=%22Taymar+Crane%22">built cranes</a>.
@@ -60,6 +60,6 @@ Photo creds: me, 2026-09-12. The inscription pictured above was not restored, or
 {% endfigure %}
 
 {% figure /assets/images/blog/2026-09-12/atlas-crane-plaque.jpg %}
-Photo creds: me, 2026-09-12. This plaque attributes the design of the crane to J. H. Jones, one-time Harbour Commission Chief Engineer. 
+This plaque attributes the design of the crane to J. H. Jones, one-time Harbour Commission Chief Engineer. 
 {% endfigure %}
 
